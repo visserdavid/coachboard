@@ -184,6 +184,16 @@ switch ($page) {
         <div class="page-header">
             <h1 class="page-title"><?= e(t('settings.title')) ?></h1>
         </div>
+        <?php if (!empty($_SESSION['user']['is_administrator']) || !empty($_SESSION['user']['is_assistant'])): ?>
+        <a href="<?= e(APP_URL) ?>/public/index.php?page=squad&action=manage"
+           class="card card--link">
+            <div class="flex-between">
+                <strong><?= e(t('settings.squad')) ?></strong>
+                <span class="text-muted">›</span>
+            </div>
+        </a>
+        <?php endif; ?>
+        <?php if (!empty($_SESSION['user']['is_administrator'])): ?>
         <a href="<?= e(APP_URL) ?>/public/index.php?page=season&action=list"
            class="card card--link">
             <div class="flex-between">
@@ -191,14 +201,12 @@ switch ($page) {
                 <span class="text-muted">›</span>
             </div>
         </a>
+        <?php endif; ?>
         <div class="card">
-            <p><?= e(t('settings.squad')) ?></p>
+            <p class="text-muted"><?= e(t('settings.staff')) ?></p>
         </div>
         <div class="card">
-            <p><?= e(t('settings.staff')) ?></p>
-        </div>
-        <div class="card">
-            <p><?= e(t('settings.formations')) ?></p>
+            <p class="text-muted"><?= e(t('settings.formations')) ?></p>
         </div>
         <?php
         break;
