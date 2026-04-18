@@ -1,4 +1,7 @@
 <?php declare(strict_types=1); ?>
+<?php if (!empty($_SESSION['flash'])): ?>
+<div class="flash-message" role="alert"><?= e($_SESSION['flash']) ?></div>
+<?php unset($_SESSION['flash']); endif; ?>
 <nav class="bottom-nav" role="navigation" aria-label="Main navigation">
     <a href="<?= APP_URL ?>/public/index.php?page=dashboard"
        class="nav-item <?= ($activePage ?? '') === 'dashboard' ? 'nav-item--active' : '' ?>"
@@ -47,3 +50,14 @@
         <span class="nav-label"><?= e(t('nav.settings')) ?></span>
     </a>
 </nav>
+<?php if (Auth::isLoggedIn()): ?>
+<a href="<?= e(APP_URL) ?>/public/index.php?page=auth&action=logout"
+   class="logout-link"
+   aria-label="<?= e(t('auth.logout')) ?>">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+        <polyline points="16 17 21 12 16 7"/>
+        <line x1="21" y1="12" x2="9" y2="12"/>
+    </svg>
+</a>
+<?php endif; ?>

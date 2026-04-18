@@ -340,6 +340,58 @@ input, select, textarea {
 }
 
 /* ============================================================
+   Logout link (top-right corner, above nav)
+   ============================================================ */
+.logout-link {
+    position: fixed;
+    bottom: calc(var(--nav-height) + 0.5rem);
+    right: 0.75rem;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-neutral);
+    z-index: 90;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.logout-link svg {
+    width: 20px;
+    height: 20px;
+}
+
+.logout-link:active {
+    color: var(--color-danger);
+}
+
+/* ============================================================
+   Flash message
+   ============================================================ */
+.flash-message {
+    position: fixed;
+    top: 1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--color-text);
+    color: #ffffff;
+    padding: 0.6rem 1.25rem;
+    border-radius: var(--radius-full);
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    z-index: 200;
+    white-space: nowrap;
+    box-shadow: var(--shadow-base);
+    animation: flash-fade 4s ease forwards;
+}
+
+@keyframes flash-fade {
+    0%   { opacity: 1; }
+    70%  { opacity: 1; }
+    100% { opacity: 0; pointer-events: none; }
+}
+
+/* ============================================================
    Utility classes
    ============================================================ */
 .text-sm     { font-size: var(--font-size-sm); }

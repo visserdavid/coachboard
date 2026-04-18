@@ -6,71 +6,70 @@ require_once dirname(__DIR__) . '/config/config.php';
 require_once dirname(__DIR__) . '/src/core/helpers.php';
 require_once dirname(__DIR__) . '/src/core/Database.php';
 require_once dirname(__DIR__) . '/src/core/Auth.php';
+require_once dirname(__DIR__) . '/src/core/Mailer.php';
+require_once dirname(__DIR__) . '/src/auth/AuthService.php';
+
+// PHPMailer autoloader (when installed via Composer)
+$autoload = dirname(__DIR__) . '/vendor/autoload.php';
+if (file_exists($autoload)) {
+    require_once $autoload;
+}
 
 // Timezone
 date_default_timezone_set(APP_TIMEZONE);
 
 // Session — secure settings
-session_start([
-    'cookie_httponly' => true,
-    'cookie_samesite' => 'Strict',
-    'cookie_secure'   => isset($_SERVER['HTTPS']),
-]);
+Auth::configureSessionCookieParams();
+session_start();
 
 // Router
-$page = preg_replace('/[^a-z0-9_-]/', '', strtolower($_GET['page'] ?? 'dashboard'));
+$page   = preg_replace('/[^a-z0-9_-]/', '', strtolower($_GET['page'] ?? 'dashboard'));
+$action = preg_replace('/[^a-z0-9_-]/', '', strtolower($_GET['action'] ?? ''));
 
-// Public pages (no login required)
-$publicPages = ['login', 'auth-verify'];
-
-if (!in_array($page, $publicPages, true)) {
-    Auth::requireLogin();
+// Auth pages are public; everything else requires login
+if ($page === 'auth') {
+    switch ($action) {
+        case 'verify':
+            require dirname(__DIR__) . '/src/auth/verify.php';
+            break;
+        case 'logout':
+            require dirname(__DIR__) . '/src/auth/logout.php';
+            break;
+        default:
+            // Show logged-out confirmation if redirected from logout
+            if (isset($_GET['message']) && $_GET['message'] === 'logged_out') {
+                $_SESSION['flash'] = t('auth.logged_out');
+            }
+            require dirname(__DIR__) . '/src/auth/login.php';
+            break;
+    }
+    exit;
 }
 
-// Render
+// All other pages require authentication
+Auth::requireLogin();
+
 $activePage = $page;
 
 ob_start();
 
 switch ($page) {
-    case 'login':
-        ?>
-        <div class="text-center" style="padding: 3rem 1rem;">
-            <h1 style="font-size: 1.75rem; font-weight: 800; color: var(--color-primary); margin-bottom: 0.25rem;">
-                <?= e(t('app.name')) ?>
-            </h1>
-            <p class="text-muted mb-2"><?= e(t('app.tagline')) ?></p>
-            <form method="post" action="<?= e(APP_URL) ?>/public/index.php?page=auth-request" style="margin-top: 2rem;">
-                <div class="form-group">
-                    <input
-                        type="email"
-                        name="email"
-                        class="form-input"
-                        placeholder="<?= e(t('auth.email_placeholder')) ?>"
-                        required
-                        autocomplete="email"
-                    >
-                </div>
-                <button type="submit" class="btn btn--primary btn--full">
-                    <?= e(t('auth.send_link')) ?>
-                </button>
-            </form>
-        </div>
-        <?php
-        break;
-
     case 'dashboard':
         ?>
         <div class="page-header">
             <h1 class="page-title"><?= e(t('dashboard.title')) ?></h1>
         </div>
         <div class="card">
-            <p class="text-muted"><?= e(t('dashboard.upcoming_match')) ?></p>
+            <p class="text-muted text-sm mb-1"><?= e(t('dashboard.upcoming_match')) ?></p>
             <p><?= e(t('dashboard.no_upcoming_match')) ?></p>
         </div>
         <div class="card">
-            <p class="text-muted"><?= e(t('dashboard.last_results')) ?></p>
+            <p class="text-muted text-sm mb-1"><?= e(t('dashboard.last_results')) ?></p>
             <p><?= e(t('dashboard.no_results')) ?></p>
+        </div>
+        <div class="card">
+            <p class="text-muted text-sm mb-1"><?= e(t('dashboard.season_stats')) ?></p>
+            <p><?= e(t('dashboard.no_top_scorer')) ?></p>
         </div>
         <?php
         break;
@@ -107,16 +106,16 @@ switch ($page) {
         <div class="page-header">
             <h1 class="page-title"><?= e(t('settings.title')) ?></h1>
         </div>
-        <div class="card card--link">
+        <div class="card">
             <p><?= e(t('settings.squad')) ?></p>
         </div>
-        <div class="card card--link">
+        <div class="card">
             <p><?= e(t('settings.season')) ?></p>
         </div>
-        <div class="card card--link">
+        <div class="card">
             <p><?= e(t('settings.staff')) ?></p>
         </div>
-        <div class="card card--link">
+        <div class="card">
             <p><?= e(t('settings.formations')) ?></p>
         </div>
         <?php
@@ -136,6 +135,6 @@ switch ($page) {
 }
 
 $content = ob_get_clean();
-$title = t('nav.' . $page) ?: t('app.name');
+$title   = t('nav.' . $page);
 
 require dirname(__DIR__) . '/templates/layout.php';
