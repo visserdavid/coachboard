@@ -1,0 +1,388 @@
+/* ============================================================
+   CoachBoard — Base Stylesheet
+   ============================================================ */
+
+/* Custom Properties */
+:root {
+    --color-primary:    #1259A8;
+    --color-accent:     #E8720C;
+    --color-bg:         #F8FAFC;
+    --color-text:       #1a1a2e;
+    --color-success:    #2a7d2a;
+    --color-neutral:    #888888;
+    --color-danger:     #c0392b;
+    --color-border:     #dde3ea;
+    --color-card-bg:    #ffffff;
+    --color-nav-bg:     #ffffff;
+
+    --font-size-sm:     0.875rem;
+    --font-size-base:   1rem;
+    --font-size-lg:     1.125rem;
+    --font-size-xl:     1.375rem;
+
+    --radius-sm:        6px;
+    --radius-base:      10px;
+    --radius-lg:        16px;
+    --radius-full:      9999px;
+
+    --shadow-sm:        0 1px 3px rgba(0, 0, 0, 0.08);
+    --shadow-base:      0 2px 8px rgba(0, 0, 0, 0.10);
+
+    --nav-height:       64px;
+    --max-width:        480px;
+}
+
+/* ============================================================
+   Reset
+   ============================================================ */
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    font-size: 16px;
+    -webkit-text-size-adjust: 100%;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: var(--font-size-base);
+    line-height: 1.5;
+    color: var(--color-text);
+    background-color: var(--color-bg);
+    min-height: 100vh;
+    padding-bottom: var(--nav-height);
+}
+
+a {
+    color: var(--color-primary);
+    text-decoration: none;
+}
+
+img {
+    max-width: 100%;
+    display: block;
+}
+
+ul, ol {
+    list-style: none;
+}
+
+button {
+    cursor: pointer;
+    font-family: inherit;
+    font-size: inherit;
+}
+
+input, select, textarea {
+    font-family: inherit;
+    font-size: inherit;
+}
+
+/* ============================================================
+   Layout
+   ============================================================ */
+.page-content {
+    max-width: var(--max-width);
+    margin: 0 auto;
+    padding: 1rem;
+}
+
+.page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.25rem;
+}
+
+.page-title {
+    font-size: var(--font-size-xl);
+    font-weight: 700;
+    color: var(--color-text);
+}
+
+/* ============================================================
+   Cards
+   ============================================================ */
+.card {
+    background: var(--color-card-bg);
+    border-radius: var(--radius-base);
+    box-shadow: var(--shadow-sm);
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+}
+
+.card--link {
+    display: block;
+    color: inherit;
+    transition: box-shadow 0.15s ease;
+}
+
+.card--link:active {
+    box-shadow: var(--shadow-base);
+}
+
+/* ============================================================
+   Buttons
+   ============================================================ */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    padding: 0.65rem 1.25rem;
+    border: none;
+    border-radius: var(--radius-full);
+    font-size: var(--font-size-base);
+    font-weight: 600;
+    line-height: 1;
+    cursor: pointer;
+    transition: opacity 0.15s ease;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.btn:active {
+    opacity: 0.85;
+}
+
+.btn--primary {
+    background: var(--color-primary);
+    color: #ffffff;
+}
+
+.btn--secondary {
+    background: transparent;
+    color: var(--color-primary);
+    border: 2px solid var(--color-primary);
+}
+
+.btn--danger {
+    background: var(--color-danger);
+    color: #ffffff;
+}
+
+.btn--accent {
+    background: var(--color-accent);
+    color: #ffffff;
+}
+
+.btn--full {
+    width: 100%;
+    display: flex;
+}
+
+.btn--sm {
+    padding: 0.4rem 0.85rem;
+    font-size: var(--font-size-sm);
+}
+
+/* ============================================================
+   Forms
+   ============================================================ */
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-label {
+    display: block;
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    color: var(--color-text);
+    margin-bottom: 0.35rem;
+}
+
+.form-input,
+.form-select,
+.form-textarea {
+    display: block;
+    width: 100%;
+    padding: 0.65rem 0.9rem;
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: #ffffff;
+    color: var(--color-text);
+    font-size: var(--font-size-base);
+    transition: border-color 0.15s ease;
+    appearance: none;
+    -webkit-appearance: none;
+}
+
+.form-input:focus,
+.form-select:focus,
+.form-textarea:focus {
+    outline: none;
+    border-color: var(--color-primary);
+}
+
+.form-textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+/* ============================================================
+   Status badges / labels
+   ============================================================ */
+.badge {
+    display: inline-block;
+    padding: 0.2rem 0.55rem;
+    border-radius: var(--radius-full);
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1.4;
+}
+
+.badge--success { background: #d4edda; color: var(--color-success); }
+.badge--neutral { background: #e8e8e8; color: var(--color-neutral); }
+.badge--danger  { background: #fde8e8; color: var(--color-danger); }
+.badge--primary { background: #dce8f8; color: var(--color-primary); }
+.badge--accent  { background: #fde8d8; color: var(--color-accent); }
+
+/* ============================================================
+   Section divider (phase separator in lists)
+   ============================================================ */
+.section-divider {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 1.25rem 0 0.75rem;
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    color: var(--color-neutral);
+    text-align: center;
+}
+
+.section-divider::before,
+.section-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--color-border);
+}
+
+/* ============================================================
+   Bottom navigation bar
+   ============================================================ */
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: var(--nav-height);
+    background: var(--color-nav-bg);
+    border-top: 1px solid var(--color-border);
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    z-index: 100;
+    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.07);
+}
+
+.nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.2rem;
+    color: var(--color-neutral);
+    text-decoration: none;
+    padding: 0.5rem 0;
+    transition: color 0.15s ease;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.nav-item--active {
+    color: var(--color-primary);
+}
+
+.nav-icon {
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+}
+
+.nav-label {
+    font-size: 0.65rem;
+    font-weight: 500;
+    line-height: 1;
+}
+
+/* ============================================================
+   Floating action button
+   ============================================================ */
+.fab {
+    position: fixed;
+    bottom: calc(var(--nav-height) + 1rem);
+    right: 1rem;
+    width: 56px;
+    height: 56px;
+    border-radius: var(--radius-full);
+    background: var(--color-accent);
+    color: #ffffff;
+    border: none;
+    box-shadow: 0 4px 12px rgba(232, 114, 12, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 90;
+    transition: box-shadow 0.15s ease;
+}
+
+.fab:active {
+    box-shadow: 0 2px 6px rgba(232, 114, 12, 0.3);
+}
+
+.fab svg {
+    width: 28px;
+    height: 28px;
+}
+
+/* ============================================================
+   Utility classes
+   ============================================================ */
+.text-sm     { font-size: var(--font-size-sm); }
+.text-muted  { color: var(--color-neutral); }
+.text-center { text-align: center; }
+.text-danger { color: var(--color-danger); }
+.text-success { color: var(--color-success); }
+
+.mt-1 { margin-top: 0.5rem; }
+.mt-2 { margin-top: 1rem; }
+.mt-3 { margin-top: 1.5rem; }
+.mb-1 { margin-bottom: 0.5rem; }
+.mb-2 { margin-bottom: 1rem; }
+
+.flex { display: flex; }
+.flex-between { display: flex; justify-content: space-between; align-items: center; }
+.gap-1 { gap: 0.5rem; }
+
+/* ============================================================
+   Score display
+   ============================================================ */
+.score-display {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--color-text);
+    letter-spacing: 0.05em;
+}
+
+/* ============================================================
+   Player circle
+   ============================================================ */
+.player-circle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-full);
+    background: var(--color-accent);
+    color: #ffffff;
+    font-weight: 700;
+    font-size: var(--font-size-sm);
+    flex-shrink: 0;
+}
+
+.player-circle--sm  { width: 36px; height: 36px; }
+.player-circle--md  { width: 48px; height: 48px; font-size: var(--font-size-base); }
+.player-circle--lg  { width: 72px; height: 72px; font-size: var(--font-size-xl); }
