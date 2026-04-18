@@ -13,8 +13,12 @@
   "auth.link_sent": "If this address is known, you will receive a login link shortly.",
   "auth.login": "Log in",
   "auth.logout": "Log out",
-  "auth.invalid_token": "This login link is invalid or has expired.",
+  "auth.invalid_token": "This login link is invalid or has expired. Please request a new one.",
   "auth.not_authorized": "You are not authorised to view this page.",
+  "auth.logged_out": "You have been logged out.",
+  "auth.email_subject": "Your CoachBoard login link",
+  "auth.email_body": "Click the link below to log in to CoachBoard. This link expires in 15 minutes and can only be used once.",
+  "auth.email_expires": "This link expires in 15 minutes.",
 
   "dashboard.title": "Dashboard",
   "dashboard.upcoming_match": "Upcoming match",

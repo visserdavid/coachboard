@@ -18,7 +18,7 @@ class Auth
             return $_SESSION['user'];
         }
 
-        $pdo = Database::getInstance()->getConnection();
+        $pdo  = Database::getInstance()->getConnection();
         $stmt = $pdo->prepare('SELECT * FROM `user` WHERE id = ? AND active = 1 LIMIT 1');
         $stmt->execute([$_SESSION['user_id']]);
         $user = $stmt->fetch();
@@ -35,7 +35,18 @@ class Auth
     public static function requireLogin(): void
     {
         if (!self::isLoggedIn()) {
-            redirect(APP_URL . '/public/index.php?page=login');
+            redirect(APP_URL . '/public/index.php?page=auth&action=login');
+        }
+    }
+
+    public static function requireRole(string $role): void
+    {
+        self::requireLogin();
+
+        $user = self::getCurrentUser();
+        if ($user === null || empty($user[$role])) {
+            http_response_code(403);
+            exit(e(t('error.forbidden')));
         }
     }
 
@@ -55,5 +66,16 @@ class Auth
             );
         }
         session_destroy();
+    }
+
+    public static function configureSessionCookieParams(): void
+    {
+        session_set_cookie_params([
+            'lifetime' => 0,
+            'path'     => '/',
+            'secure'   => isset($_SERVER['HTTPS']),
+            'httponly' => true,
+            'samesite' => 'Strict',
+        ]);
     }
 }
