@@ -1,6 +1,5 @@
 # Configuration files with sensitive data
-config/database.php
-config/mail.php
+config/config.php
 
 # Dependencies
 vendor/
