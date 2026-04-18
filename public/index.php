@@ -10,6 +10,8 @@ require_once dirname(__DIR__) . '/src/core/Mailer.php';
 require_once dirname(__DIR__) . '/src/auth/AuthService.php';
 require_once dirname(__DIR__) . '/src/season/SeasonRepository.php';
 require_once dirname(__DIR__) . '/src/season/SeasonService.php';
+require_once dirname(__DIR__) . '/src/player/PlayerRepository.php';
+require_once dirname(__DIR__) . '/src/player/PlayerService.php';
 
 // PHPMailer autoloader (when installed via Composer)
 $autoload = dirname(__DIR__) . '/vendor/autoload.php';
@@ -58,6 +60,36 @@ if (!isset($_SESSION['active_season'])) {
     $_SESSION['active_phases'] = $seasonRepo->getPhasesBySeason(
         (int) ($_SESSION['active_season']['id'] ?? 0)
     );
+}
+
+// Player/squad pages manage their own output and layout
+if ($page === 'squad') {
+    require_once dirname(__DIR__) . '/src/player/PlayerRepository.php';
+    require_once dirname(__DIR__) . '/src/player/PlayerService.php';
+    switch ($action) {
+        case 'profile':
+            require dirname(__DIR__) . '/src/player/player_profile.php';
+            break;
+        case 'edit':
+            require dirname(__DIR__) . '/src/player/player_edit.php';
+            break;
+        case 'delete':
+            require dirname(__DIR__) . '/src/player/player_delete.php';
+            break;
+        case 'restore':
+            require dirname(__DIR__) . '/src/player/player_restore.php';
+            break;
+        case 'create':
+            require dirname(__DIR__) . '/src/player/player_create.php';
+            break;
+        case 'manage':
+            require dirname(__DIR__) . '/src/player/player_manage.php';
+            break;
+        default:
+            require dirname(__DIR__) . '/src/player/player_list.php';
+            break;
+    }
+    exit;
 }
 
 // Season pages manage their own output and layout (like auth pages)
@@ -144,15 +176,6 @@ switch ($page) {
             <h1 class="page-title"><?= e(t('training.title')) ?></h1>
         </div>
         <p class="text-muted"><?= e(t('training.no_sessions')) ?></p>
-        <?php
-        break;
-
-    case 'squad':
-        ?>
-        <div class="page-header">
-            <h1 class="page-title"><?= e(t('player.title')) ?></h1>
-        </div>
-        <p class="text-muted"><?= e(t('player.no_players')) ?></p>
         <?php
         break;
 
