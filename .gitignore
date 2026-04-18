@@ -23,3 +23,6 @@ Thumbs.db
 
 # Claude Code prompts
 prompts/
+
+# Local Claude Code settings
+.claude/settings.local.json
