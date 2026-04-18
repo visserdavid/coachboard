@@ -44,6 +44,7 @@ CREATE TABLE IF NOT EXISTS `magic_link` (
 CREATE TABLE IF NOT EXISTS `season` (
     `id`         INT UNSIGNED  NOT NULL AUTO_INCREMENT,
     `name`       VARCHAR(50)   NOT NULL,
+    `has_phases` TINYINT(1)    NOT NULL DEFAULT 0,
     `active`     TINYINT(1)    NOT NULL DEFAULT 1,
     `created_at` TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `updated_at` TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -73,13 +74,22 @@ CREATE TABLE IF NOT EXISTS `team` (
     `id`              INT UNSIGNED  NOT NULL AUTO_INCREMENT,
     `season_id`       INT UNSIGNED  NOT NULL,
     `name`            VARCHAR(100)  NOT NULL,
-    -- training_day_1/2: 1=Monday through 7=Sunday
-    `training_day_1`  TINYINT       NULL DEFAULT NULL,
-    `training_day_2`  TINYINT       NULL DEFAULT NULL,
     `created_at`      TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `updated_at`      TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (`id`),
     CONSTRAINT `fk_team_season` FOREIGN KEY (`season_id`) REFERENCES `season` (`id`) ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+CREATE TABLE IF NOT EXISTS `team_training_day` (
+    `id`          INT UNSIGNED     NOT NULL AUTO_INCREMENT,
+    `team_id`     INT UNSIGNED     NOT NULL,
+    -- day_of_week: 1=Monday through 7=Sunday
+    `day_of_week` TINYINT UNSIGNED NOT NULL,
+    `created_at`  TIMESTAMP        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    KEY `idx_team_training_day_team` (`team_id`),
+    CONSTRAINT `fk_team_training_day_team` FOREIGN KEY (`team_id`) REFERENCES `team` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
