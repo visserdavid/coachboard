@@ -33,3 +33,30 @@ function redirect(string $url): never
     header('Location: ' . $url);
     exit;
 }
+
+function getActiveSeason(): ?array
+{
+    return $_SESSION['active_season'] ?? null;
+}
+
+function getActivePhases(): array
+{
+    return $_SESSION['active_phases'] ?? [];
+}
+
+function getCurrentPhase(): ?array
+{
+    $today  = date('Y-m-d');
+    $phases = getActivePhases();
+    foreach ($phases as $phase) {
+        if ($phase['start_date'] <= $today && $phase['end_date'] >= $today) {
+            return $phase;
+        }
+    }
+    return null;
+}
+
+function seasonHasPhases(): bool
+{
+    return (bool) (getActiveSeason()['has_phases'] ?? false);
+}
