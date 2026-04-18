@@ -7,7 +7,7 @@ Update this file at the end of every session.
 
 ## Project Status
 
-**Current phase:** Setup
+**Current phase:** Core feature development
 **Last updated:** April 2026
 
 ---
@@ -25,8 +25,8 @@ Update this file at the end of every session.
 - [x] Milestone 2 — Database schema
 - [x] Milestone 3 — Core PHP files
 - [x] Milestone 4 — Base layout, stylesheet and entry point
-- [ ] Authentication (magic links)
-- [ ] Season and phase management
+- [x] Authentication (magic links)
+- [x] Season and phase management
 - [ ] Squad management
 - [ ] Training sessions
 - [ ] Match preparation
@@ -86,6 +86,20 @@ Update this file at the end of every session.
 
 ## Notes for Next Session
 
-*Update this section at the end of each session with what was last completed and what to do next.*
+Last completed: Season and phase management — all three milestones done and pushed.
 
-Next session: execute `prompts/01-project-setup.md` in Claude Code.
+What was built:
+- `database/schema.sql`: added `has_phases` to `season`, replaced `training_day_1/2` on `team` with a new `team_training_day` table for flexible training days
+- `src/season/SeasonRepository.php`: full data layer for seasons, phases, teams, training days
+- `src/season/SeasonService.php`: createNewSeason, createSeasonFromCopy, setActiveSeason, generateTrainingSchedule, addManualTrainingSession, validatePhases
+- Season screens: list, create form (blank/copy modes, optional phases, training days), detail (edit phases/training days, add manual session), set_active, add_training
+- `src/core/helpers.php`: getActiveSeason(), getActivePhases(), getCurrentPhase(), seasonHasPhases()
+- `public/index.php`: lazy-loads season context on every authenticated request; settings page links to season management; dashboard shows active season and current phase
+
+Key decisions:
+- Season routing handled before `ob_start()` in index.php (same pattern as auth), because season screen files manage their own ob/layout
+- When creating a season, a team is created automatically with the same name as the season
+- `generateTrainingSchedule` is NOT called inside `createNewSeason` — the caller (season_form.php) calls it after creation and uses the return value for the success message count
+- Seasons are created as inactive (active=0); first activation is done via set_active
+
+Next: **Squad management** — player creation, profile page, skill baselines.
