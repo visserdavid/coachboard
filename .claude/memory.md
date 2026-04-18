@@ -27,7 +27,7 @@ Update this file at the end of every session.
 - [x] Milestone 4 — Base layout, stylesheet and entry point
 - [x] Authentication (magic links)
 - [x] Season and phase management
-- [ ] Squad management
+- [x] Squad management
 - [ ] Training sessions
 - [ ] Match preparation
 - [ ] Live match tracking
@@ -86,20 +86,30 @@ Update this file at the end of every session.
 
 ## Notes for Next Session
 
-Last completed: Season and phase management — all three milestones done and pushed.
+Last completed: Squad management — all four milestones done and pushed.
 
-What was built:
-- `database/schema.sql`: added `has_phases` to `season`, replaced `training_day_1/2` on `team` with a new `team_training_day` table for flexible training days
-- `src/season/SeasonRepository.php`: full data layer for seasons, phases, teams, training days
-- `src/season/SeasonService.php`: createNewSeason, createSeasonFromCopy, setActiveSeason, generateTrainingSchedule, addManualTrainingSession, validatePhases
-- Season screens: list, create form (blank/copy modes, optional phases, training days), detail (edit phases/training days, add manual session), set_active, add_training
-- `src/core/helpers.php`: getActiveSeason(), getActivePhases(), getCurrentPhase(), seasonHasPhases()
-- `public/index.php`: lazy-loads season context on every authenticated request; settings page links to season management; dashboard shows active season and current phase
+What was built (squad management):
+- `src/player/PlayerRepository.php`: getPlayersByTeam, getPlayerById, createPlayer, updatePlayer, updatePhotoPath, deletePlayer, restorePlayer, squadNumberExists, getSkillsByPlayer, saveSkills, getAverageRatingsByPlayer, getPlayerSeasonStats
+- `src/player/PlayerService.php`: createPlayer, updatePlayer, deletePlayer, uploadPhoto, saveSkills, copyPlayersToSeason — with validation
+- `src/player/player_list.php`: squad list with photo/initials circle, sortable by number or name
+- `src/player/player_profile.php`: full profile with SVG radar chart, season stats, average ratings
+- `src/player/player_edit.php`: two-section form — basic details (admin/assistant) and skill baseline (admin/trainer)
+- `src/player/player_delete.php`, `player_restore.php`: soft delete and restore
+- `src/player/player_create.php`: minimal create form (name, squad number, photo consent) → redirects to edit
+- `src/player/player_manage.php`: settings squad page showing all players (including deleted) with add/delete/restore buttons
+- `public/index.php`: squad routing before ob_start(); settings links to squad manage and season list based on role
 
 Key decisions:
-- Season routing handled before `ob_start()` in index.php (same pattern as auth), because season screen files manage their own ob/layout
-- When creating a season, a team is created automatically with the same name as the season
-- `generateTrainingSchedule` is NOT called inside `createNewSeason` — the caller (season_form.php) calls it after creation and uses the return value for the success message count
-- Seasons are created as inactive (active=0); first activation is done via set_active
+- Squad routing follows same pattern as season pages (before ob_start, files manage own ob/layout)
+- PlayerRepository handles raw data access; PlayerService handles validation and business logic
+- Photo upload saves to public/img/players/ with filename player_{id}_{timestamp}.jpg; stored path is relative (img/players/...)
+- Radar chart is inline SVG generated server-side in player_profile.php
+- player_manage.php is the settings-accessible page; player_list.php is the regular squad nav page (active players only)
 
-Next: **Squad management** — player creation, profile page, skill baselines.
+Previous session built:
+- `database/schema.sql`: has_phases + team_training_day table
+- `src/season/SeasonRepository.php`, `SeasonService.php`
+- Season screens: list, form, detail, set_active, add_training
+- `src/core/helpers.php`: season context helpers
+
+Next: **Training sessions** — training list, detail, attendance, focus.
