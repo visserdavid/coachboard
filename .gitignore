@@ -1,0 +1,22 @@
+# Configuration files with sensitive data
+config/database.php
+config/mail.php
+
+# Dependencies
+vendor/
+
+# Uploaded files
+public/uploads/
+
+# Logs
+logs/
+*.log
+
+# Editor and OS files
+.vscode/
+.idea/
+Thumbs.db
+.DS_Store
+
+# Environment files
+.env
