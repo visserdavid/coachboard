@@ -141,3 +141,31 @@ After completing each milestone, update `.claude/memory.md`:
 
 Keep memory.md current — it is the primary way to resume work after 
 a session is interrupted.
+
+## Bug Reports and Issues
+
+When the user reports a problem, bug, error message or unexpected behaviour,
+always follow this order:
+
+1. **Create a GitHub issue first** before attempting any fix:
+gh issue create 
+--title "Short descriptive title" 
+--body "## Description\n\nWhat happened:\n[error or problem description]\n\n## Steps to reproduce\n[if known]\n\n## Expected behaviour\n[what should happen]\n\n## Environment\nLocal (Laragon) or production" 
+--label "bug"
+
+2. **Note the issue number** returned by the CLI (e.g. #12)
+
+3. **Fix the problem** in the code
+
+4. **Reference the issue in the commit message:**
+git add .
+git commit -m "Fix [short description] — closes #12"
+git push
+   Using "closes #12" automatically marks the issue as resolved on GitHub.
+
+If the problem is a feature request or improvement rather than a bug, use
+`--label "enhancement"` instead of `--label "bug"`.
+
+If GitHub labels do not exist yet, create them first:
+gh label create "bug" --color "d73a4a" --description "Something isn't working"
+gh label create "enhancement" --color "a2eeef" --description "New feature or improvement"
