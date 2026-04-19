@@ -14,6 +14,9 @@ require_once dirname(__DIR__) . '/src/player/PlayerRepository.php';
 require_once dirname(__DIR__) . '/src/player/PlayerService.php';
 require_once dirname(__DIR__) . '/src/training/TrainingRepository.php';
 require_once dirname(__DIR__) . '/src/training/TrainingService.php';
+require_once dirname(__DIR__) . '/src/match/MatchRepository.php';
+require_once dirname(__DIR__) . '/src/match/FormationRepository.php';
+require_once dirname(__DIR__) . '/src/match/MatchService.php';
 
 // PHPMailer autoloader (when installed via Composer)
 $autoload = dirname(__DIR__) . '/vendor/autoload.php';
@@ -89,6 +92,31 @@ if ($page === 'squad') {
             break;
         default:
             require dirname(__DIR__) . '/src/player/player_list.php';
+            break;
+    }
+    exit;
+}
+
+// Match pages manage their own output and layout
+if ($page === 'match') {
+    switch ($action) {
+        case 'create':
+            require dirname(__DIR__) . '/src/match/match_create.php';
+            break;
+        case 'prepare':
+            require dirname(__DIR__) . '/src/match/match_prepare.php';
+            break;
+        case 'lineup':
+            require dirname(__DIR__) . '/src/match/match_lineup.php';
+            break;
+        case 'live':
+            require dirname(__DIR__) . '/src/match/match_live.php';
+            break;
+        case 'review':
+            require dirname(__DIR__) . '/src/match/match_review.php';
+            break;
+        default:
+            require dirname(__DIR__) . '/src/match/match_list.php';
             break;
     }
     exit;
@@ -183,12 +211,7 @@ switch ($page) {
         break;
 
     case 'matches':
-        ?>
-        <div class="page-header">
-            <h1 class="page-title"><?= e(t('match.title')) ?></h1>
-        </div>
-        <p class="text-muted"><?= e(t('match.no_matches')) ?></p>
-        <?php
+        redirect(APP_URL . '/public/index.php?page=match');
         break;
 
     case 'settings':
