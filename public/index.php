@@ -19,6 +19,7 @@ require_once dirname(__DIR__) . '/src/match/FormationRepository.php';
 require_once dirname(__DIR__) . '/src/match/MatchService.php';
 require_once dirname(__DIR__) . '/src/stats/StatsRepository.php';
 require_once dirname(__DIR__) . '/src/auth/StaffRepository.php';
+require_once dirname(__DIR__) . '/src/match/FormationService.php';
 
 // PHPMailer autoloader (when installed via Composer)
 $autoload = dirname(__DIR__) . '/vendor/autoload.php';
@@ -171,6 +172,29 @@ if ($page === 'staff') {
             break;
         default:
             require dirname(__DIR__) . '/src/auth/staff_list.php';
+            break;
+    }
+    exit;
+}
+
+// Formation pages — administrator only
+if ($page === 'formation') {
+    Auth::requireRole('is_administrator');
+    switch ($action) {
+        case 'create':
+            require dirname(__DIR__) . '/src/match/formation_form.php';
+            break;
+        case 'edit':
+            require dirname(__DIR__) . '/src/match/formation_form.php';
+            break;
+        case 'delete':
+            require dirname(__DIR__) . '/src/match/formation_delete.php';
+            break;
+        case 'set_default':
+            require dirname(__DIR__) . '/src/match/formation_set_default.php';
+            break;
+        default:
+            require dirname(__DIR__) . '/src/match/formation_list.php';
             break;
     }
     exit;
