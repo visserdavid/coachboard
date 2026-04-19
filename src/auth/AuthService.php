@@ -38,11 +38,6 @@ class AuthService
 
     public function verifyToken(string $token): ?array
     {
-        // Clean up expired tokens opportunistically
-        $this->pdo->prepare(
-            'DELETE FROM magic_link WHERE expires_at < NOW()'
-        )->execute();
-
         $stmt = $this->pdo->prepare(
             'SELECT ml.id, ml.user_id, ml.expires_at, ml.used_at
              FROM magic_link ml
@@ -69,6 +64,11 @@ class AuthService
             'UPDATE magic_link SET used_at = NOW() WHERE id = ?'
         )->execute([$link['id']]);
 
+        // Clean up expired tokens after a successful lookup (avoids timezone-driven false deletions)
+        $this->pdo->prepare(
+            'DELETE FROM magic_link WHERE expires_at < NOW()'
+        )->execute();
+
         // Load user
         $userStmt = $this->pdo->prepare(
             'SELECT * FROM `user` WHERE id = ? AND active = 1 LIMIT 1'
@@ -84,6 +84,7 @@ class AuthService
         session_regenerate_id(true);
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['user']    = $user;
+        session_write_close();
 
         return $user;
     }
