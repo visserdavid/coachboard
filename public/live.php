@@ -22,7 +22,7 @@ function renderNotFound(): void
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title><?= e(t('app.name')) ?></title>
-        <link rel="stylesheet" href="<?= e(APP_URL) ?>/public/css/style.css">
+        <link rel="stylesheet" href="<?= e(APP_URL) ?>/css/style.css">
     </head>
     <body>
         <main class="page-content" style="padding-top:3rem; text-align:center;">
@@ -154,7 +154,7 @@ function playerDisplayName(array $p): string
     <meta http-equiv="refresh" content="60">
     <meta name="theme-color" content="#1259A8">
     <title><?= e($teamName . ' vs ' . $match['opponent']) ?> — <?= e(t('app.name')) ?></title>
-    <link rel="stylesheet" href="<?= e(APP_URL) ?>/public/css/style.css">
+    <link rel="stylesheet" href="<?= e(APP_URL) ?>/css/style.css">
     <style>
         body { padding-bottom: 2rem; }
         .ls-header {
