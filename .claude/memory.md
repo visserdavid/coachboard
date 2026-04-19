@@ -28,7 +28,7 @@ Update this file at the end of every session.
 - [x] Authentication (magic links)
 - [x] Season and phase management
 - [x] Squad management
-- [ ] Training sessions
+- [x] Training sessions
 - [ ] Match preparation
 - [ ] Live match tracking
 - [ ] Parent livestream
@@ -86,30 +86,24 @@ Update this file at the end of every session.
 
 ## Notes for Next Session
 
-Last completed: Squad management — all four milestones done and pushed.
+Last completed: Training sessions — all three milestones done and pushed.
 
-What was built (squad management):
-- `src/player/PlayerRepository.php`: getPlayersByTeam, getPlayerById, createPlayer, updatePlayer, updatePhotoPath, deletePlayer, restorePlayer, squadNumberExists, getSkillsByPlayer, saveSkills, getAverageRatingsByPlayer, getPlayerSeasonStats
-- `src/player/PlayerService.php`: createPlayer, updatePlayer, deletePlayer, uploadPhoto, saveSkills, copyPlayersToSeason — with validation
-- `src/player/player_list.php`: squad list with photo/initials circle, sortable by number or name
-- `src/player/player_profile.php`: full profile with SVG radar chart, season stats, average ratings
-- `src/player/player_edit.php`: two-section form — basic details (admin/assistant) and skill baseline (admin/trainer)
-- `src/player/player_delete.php`, `player_restore.php`: soft delete and restore
-- `src/player/player_create.php`: minimal create form (name, squad number, photo consent) → redirects to edit
-- `src/player/player_manage.php`: settings squad page showing all players (including deleted) with add/delete/restore buttons
-- `public/index.php`: squad routing before ob_start(); settings links to squad manage and season list based on role
+What was built (training sessions):
+- `src/training/TrainingRepository.php`: getSessionsByTeam (with phase join), getSessionById, createSession, updateSession, getFocusBySession, setFocus, getAttendanceBySession, getAttendanceByPlayer, saveAttendance (manual upsert), getRecentAttendance, getFocusForSessions (batch), getAttendanceSummariesBySessions (batch)
+- `src/training/TrainingService.php`: cancelSession, reinstateSession, addManualSession, saveSessionContent, saveAttendance, getAttendanceSummary, getRecentAttendanceForLineup
+- `src/training/training_list.php`: chronological timeline with phase dividers (section-divider), focus icons, past attendance summary (present/total), upcoming absence count; JS scroll to anchor session
+- `src/training/training_detail.php`: header with date/phase, cancel/reinstate form, section 1 content (focus checkboxes + notes), section 2 attendance (all active players with status toggle buttons + reason/note sub-fields via JS), section 3 summary (past sessions only)
+- `src/training/training_cancel.php`, `training_reinstate.php`: POST handlers with redirect
+- `public/index.php`: training routing block before ob_start(); require TrainingRepository/TrainingService
+- `public/css/style.css`: training-focus-icon, attendance-row, attendance-buttons, att-btn styles
+- `lang/en.json`: added training.session, training.add_manual, training.content_saved, training.cancel, training.reinstate, training.reinstated, training.attendance_save, training.attendance_saved, training.summary
 
 Key decisions:
-- Squad routing follows same pattern as season pages (before ob_start, files manage own ob/layout)
-- PlayerRepository handles raw data access; PlayerService handles validation and business logic
-- Photo upload saves to public/img/players/ with filename player_{id}_{timestamp}.jpg; stored path is relative (img/players/...)
-- Radar chart is inline SVG generated server-side in player_profile.php
-- player_manage.php is the settings-accessible page; player_list.php is the regular squad nav page (active players only)
+- Training routing uses same if/$page pattern as squad/season (before ob_start, files manage own ob/layout)
+- Attendance upsert done manually (SELECT + INSERT/UPDATE) since attendance table has no unique constraint
+- Batch loading (getFocusForSessions, getAttendanceSummariesBySessions) for the list view to avoid N+1 queries
+- getRecentAttendanceForLineup uses two queries: first gets last 5 session IDs, then fetches all attendance for those sessions
+- Attendance past/total in list uses sum of all attendance records (not squad size) — shows 0/0 if no attendance recorded
+- Focus icons use inline SVG; attacking=orange, defending=blue, transitioning=green CSS theme colors
 
-Previous session built:
-- `database/schema.sql`: has_phases + team_training_day table
-- `src/season/SeasonRepository.php`, `SeasonService.php`
-- Season screens: list, form, detail, set_active, add_training
-- `src/core/helpers.php`: season context helpers
-
-Next: **Training sessions** — training list, detail, attendance, focus.
+Next: **Match preparation** — match list, preparation flow (attendance + lineup), status transitions.
