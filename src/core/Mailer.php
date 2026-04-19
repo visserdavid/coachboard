@@ -23,11 +23,20 @@ class Mailer
 
             $mail->isSMTP();
             $mail->Host       = MAIL_HOST;
-            $mail->SMTPAuth   = true;
-            $mail->Username   = MAIL_USER;
-            $mail->Password   = MAIL_PASS;
-            $mail->SMTPSecure = MAIL_PORT === 465 ? PHPMailer::ENCRYPTION_SMTPS : PHPMailer::ENCRYPTION_STARTTLS;
-            $mail->Port       = MAIL_PORT;
+            
+            // Development & Testing (Mailpit)
+            if (MAIL_PORT == 1025) {
+                $mail->SMTPAuth   = false;
+                $mail->SMTPSecure = ''; 
+            } else {
+                // Live server
+                $mail->SMTPAuth   = true;
+                $mail->Username   = MAIL_USER;
+                $mail->Password   = MAIL_PASS;
+                $mail->SMTPSecure = MAIL_PORT === 465 ? PHPMailer::ENCRYPTION_SMTPS : PHPMailer::ENCRYPTION_STARTTLS;
+            }
+            
+            $mail->Port = MAIL_PORT;
 
             $mail->setFrom(MAIL_FROM, MAIL_FROM_NAME);
             $mail->addAddress($to);
