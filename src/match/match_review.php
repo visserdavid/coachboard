@@ -10,11 +10,11 @@ $match = $matchRepo->getMatchById($id);
 
 if ($match === null) {
     $_SESSION['flash'] = t('match.not_found');
-    redirect(APP_URL . '/public/index.php?page=match');
+    redirect(APP_URL . '/index.php?page=match');
 }
 
 if ($match['status'] !== 'finished') {
-    redirect(APP_URL . '/public/index.php?page=match&action=live&id=' . $id);
+    redirect(APP_URL . '/index.php?page=match&action=live&id=' . $id);
 }
 
 $matchId = (int) $match['id'];
@@ -27,7 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['_action'] ?? '') === 'reop
         "UPDATE `match` SET status = 'active', goals_scored = NULL, goals_conceded = NULL WHERE id = ?"
     );
     $stmt->execute([$matchId]);
-    redirect(APP_URL . '/public/index.php?page=match&action=live&id=' . $matchId);
+    redirect(APP_URL . '/index.php?page=match&action=live&id=' . $matchId);
 }
 
 // Data
@@ -105,7 +105,7 @@ unset($_SESSION['flash']);
 ob_start();
 ?>
 <div class="page-header">
-    <a href="<?= e(APP_URL) ?>/public/index.php?page=match"
+    <a href="<?= e(APP_URL) ?>/index.php?page=match"
        class="btn btn--secondary btn--sm"><?= e(t('action.back')) ?></a>
     <h1 class="page-title" style="font-size:1rem;">
         <?= e($match['opponent']) ?> · <?= e($dateLabel) ?>
@@ -251,7 +251,7 @@ ob_start();
     <?php endif; ?>
     <?php if (!empty($presentPlayers)): ?>
     <form method="POST"
-          action="<?= e(APP_URL) ?>/public/index.php?page=match&action=rate&id=<?= $matchId ?>">
+          action="<?= e(APP_URL) ?>/index.php?page=match&action=rate&id=<?= $matchId ?>">
         <input type="hidden" name="match_id" value="<?= $matchId ?>">
         <?php foreach ($presentPlayers as $p):
             $pid = (int) $p['player_id'];
@@ -295,7 +295,7 @@ ob_start();
 <?php if (!empty($_SESSION['user']['is_administrator'])): ?>
 <div style="margin-bottom:1.5rem;">
     <form method="POST"
-          action="<?= e(APP_URL) ?>/public/index.php?page=match&action=review&id=<?= $matchId ?>"
+          action="<?= e(APP_URL) ?>/index.php?page=match&action=review&id=<?= $matchId ?>"
           onsubmit="return confirm(<?= e(json_encode(t('review.reopen_confirm'))) ?>)">
         <input type="hidden" name="_action" value="reopen">
         <button type="submit" class="btn btn--secondary btn--full btn--sm" style="color:var(--color-danger);">

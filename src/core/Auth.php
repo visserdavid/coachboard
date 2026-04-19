@@ -35,7 +35,7 @@ class Auth
     public static function requireLogin(): void
     {
         if (!self::isLoggedIn()) {
-            redirect(APP_URL . '/public/index.php?page=auth&action=login');
+            redirect(APP_URL . '/index.php?page=auth&action=login');
         }
     }
 
@@ -46,7 +46,7 @@ class Auth
         $user = self::getCurrentUser();
         if ($user === null || empty($user[$role])) {
             $_SESSION['flash'] = t('auth.access_denied');
-            redirect(APP_URL . '/public/index.php?page=dashboard');
+            redirect(APP_URL . '/index.php?page=dashboard');
         }
     }
 

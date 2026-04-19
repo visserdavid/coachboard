@@ -10,7 +10,7 @@ $playerSvc  = new PlayerService();
 $player = $playerRepo->getPlayerById($id);
 if ($player === null) {
     $_SESSION['flash'] = t('error.not_found');
-    redirect(APP_URL . '/public/index.php?page=squad');
+    redirect(APP_URL . '/index.php?page=squad');
 }
 
 $user    = Auth::getCurrentUser();
@@ -20,7 +20,7 @@ $canSkills = $user && (!empty($user['is_administrator']) || !empty($user['is_tra
 if (!$canEdit && !$canSkills) {
     http_response_code(403);
     $_SESSION['flash'] = t('error.forbidden');
-    redirect(APP_URL . '/public/index.php?page=squad&action=profile&id=' . $id);
+    redirect(APP_URL . '/index.php?page=squad&action=profile&id=' . $id);
 }
 
 // Determine season via team
@@ -59,7 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             $_SESSION['flash'] = t('player.saved');
-            redirect(APP_URL . '/public/index.php?page=squad&action=edit&id=' . $id);
+            redirect(APP_URL . '/index.php?page=squad&action=edit&id=' . $id);
         } catch (InvalidArgumentException $e) {
             $errors[] = $e->getMessage();
         } catch (Exception $e) {
@@ -82,7 +82,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ];
             $playerSvc->saveSkills($id, $seasonId, $skillData);
             $_SESSION['flash'] = t('skill.saved');
-            redirect(APP_URL . '/public/index.php?page=squad&action=edit&id=' . $id);
+            redirect(APP_URL . '/index.php?page=squad&action=edit&id=' . $id);
         } catch (InvalidArgumentException $e) {
             $errors[] = $e->getMessage();
         }
@@ -99,7 +99,7 @@ $skillKeys = ['pace', 'shooting', 'passing', 'dribbling', 'defending', 'physical
 ob_start();
 ?>
 <div class="page-header">
-    <a href="<?= e(APP_URL) ?>/public/index.php?page=squad&action=profile&id=<?= $id ?>"
+    <a href="<?= e(APP_URL) ?>/index.php?page=squad&action=profile&id=<?= $id ?>"
        class="btn btn--secondary btn--sm"><?= e(t('action.back')) ?></a>
     <h1 class="page-title"><?= e(t('player.edit')) ?></h1>
     <span></span>

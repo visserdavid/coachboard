@@ -11,7 +11,7 @@ $teamId = $team ? (int) $team['id'] : null;
 
 if ($teamId === null) {
     $_SESSION['flash'] = t('dashboard.no_season');
-    redirect(APP_URL . '/public/index.php?page=match');
+    redirect(APP_URL . '/index.php?page=match');
 }
 
 $errors = [];
@@ -29,7 +29,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     try {
         $matchId = $matchService->createMatch($data);
-        redirect(APP_URL . '/public/index.php?page=match&action=prepare&id=' . $matchId);
+        redirect(APP_URL . '/index.php?page=match&action=prepare&id=' . $matchId);
     } catch (InvalidArgumentException $e) {
         $errors[] = $e->getMessage();
     }
@@ -38,7 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 ob_start();
 ?>
 <div class="page-header">
-    <a href="<?= e(APP_URL) ?>/public/index.php?page=match"
+    <a href="<?= e(APP_URL) ?>/index.php?page=match"
        class="btn btn--secondary btn--sm"><?= e(t('action.back')) ?></a>
     <h1 class="page-title" style="font-size:1rem;"><?= e(t('match.new')) ?></h1>
     <span></span>
@@ -53,7 +53,7 @@ ob_start();
 <?php endif; ?>
 
 <div class="card">
-    <form method="POST" action="<?= e(APP_URL) ?>/public/index.php?page=match&action=create">
+    <form method="POST" action="<?= e(APP_URL) ?>/index.php?page=match&action=create">
 
         <div class="form-group">
             <label class="form-label"><?= e(t('match.opponent')) ?></label>

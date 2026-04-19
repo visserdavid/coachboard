@@ -15,7 +15,7 @@ if ($isEdit) {
     $formation = $formationRepo->getFormationById($editId);
     if ($formation === null) {
         $_SESSION['flash'] = t('error.not_found');
-        redirect(APP_URL . '/public/index.php?page=formation&action=list');
+        redirect(APP_URL . '/index.php?page=formation&action=list');
     }
     $existingPositions = $formationRepo->getPositionsByFormation($editId);
 }
@@ -45,7 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         $_SESSION['flash'] = t('formation.saved');
-        redirect(APP_URL . '/public/index.php?page=formation&action=list');
+        redirect(APP_URL . '/index.php?page=formation&action=list');
     }
 
     // Re-populate from POST on error
@@ -62,7 +62,7 @@ $validLines = ['goalkeeper', 'defence', 'midfield', 'attack'];
 ob_start();
 ?>
 <div class="page-header">
-    <a href="<?= e(APP_URL) ?>/public/index.php?page=formation&action=list"
+    <a href="<?= e(APP_URL) ?>/index.php?page=formation&action=list"
        class="btn btn--secondary btn--sm"><?= e(t('action.back')) ?></a>
     <h1 class="page-title">
         <?= $isEdit ? e(t('formation.edit')) : e(t('formation.add')) ?>
@@ -78,7 +78,7 @@ ob_start();
 <?php endif; ?>
 
 <form method="POST"
-      action="<?= e(APP_URL) ?>/public/index.php?page=formation&action=<?= $isEdit ? 'edit&id=' . $editId : 'create' ?>">
+      action="<?= e(APP_URL) ?>/index.php?page=formation&action=<?= $isEdit ? 'edit&id=' . $editId : 'create' ?>">
     <div class="card">
         <div class="form-group">
             <label class="form-label" for="name"><?= e(t('formation.name')) ?></label>

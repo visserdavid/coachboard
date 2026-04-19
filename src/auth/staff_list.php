@@ -12,10 +12,10 @@ unset($_SESSION['flash']);
 ob_start();
 ?>
 <div class="page-header">
-    <a href="<?= e(APP_URL) ?>/public/index.php?page=settings"
+    <a href="<?= e(APP_URL) ?>/index.php?page=settings"
        class="btn btn--secondary btn--sm"><?= e(t('action.back')) ?></a>
     <h1 class="page-title"><?= e(t('staff.title')) ?></h1>
-    <a href="<?= e(APP_URL) ?>/public/index.php?page=staff&action=create"
+    <a href="<?= e(APP_URL) ?>/index.php?page=staff&action=create"
        class="btn btn--primary btn--sm"><?= e(t('staff.add')) ?></a>
 </div>
 
@@ -54,11 +54,11 @@ ob_start();
                     </div>
                 </div>
                 <div class="flex gap-1" style="flex-shrink:0;margin-left:0.5rem;">
-                    <a href="<?= e(APP_URL) ?>/public/index.php?page=staff&action=edit&id=<?= (int) $member['id'] ?>"
+                    <a href="<?= e(APP_URL) ?>/index.php?page=staff&action=edit&id=<?= (int) $member['id'] ?>"
                        class="btn btn--secondary btn--sm"><?= e(t('action.edit')) ?></a>
                     <?php if ($member['active']): ?>
                         <form method="POST"
-                              action="<?= e(APP_URL) ?>/public/index.php?page=staff&action=deactivate"
+                              action="<?= e(APP_URL) ?>/index.php?page=staff&action=deactivate"
                               onsubmit="return confirm(<?= e(json_encode(t('staff.deactivate_confirm'))) ?>)">
                             <input type="hidden" name="id" value="<?= (int) $member['id'] ?>">
                             <button type="submit" class="btn btn--danger btn--sm">
@@ -67,7 +67,7 @@ ob_start();
                         </form>
                     <?php else: ?>
                         <form method="POST"
-                              action="<?= e(APP_URL) ?>/public/index.php?page=staff&action=reactivate">
+                              action="<?= e(APP_URL) ?>/index.php?page=staff&action=reactivate">
                             <input type="hidden" name="id" value="<?= (int) $member['id'] ?>">
                             <button type="submit" class="btn btn--secondary btn--sm">
                                 <?= e(t('staff.reactivate')) ?>

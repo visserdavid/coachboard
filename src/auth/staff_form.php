@@ -13,7 +13,7 @@ if ($isEdit) {
     $member = $staffRepo->getStaffById($editId);
     if ($member === null) {
         $_SESSION['flash'] = t('error.not_found');
-        redirect(APP_URL . '/public/index.php?page=staff&action=list');
+        redirect(APP_URL . '/index.php?page=staff&action=list');
     }
 }
 
@@ -59,7 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         $_SESSION['flash'] = t('staff.saved');
-        redirect(APP_URL . '/public/index.php?page=staff&action=list');
+        redirect(APP_URL . '/index.php?page=staff&action=list');
     }
 }
 
@@ -81,7 +81,7 @@ $isAssistant     = isset($_POST['first_name'])
 ob_start();
 ?>
 <div class="page-header">
-    <a href="<?= e(APP_URL) ?>/public/index.php?page=staff&action=list"
+    <a href="<?= e(APP_URL) ?>/index.php?page=staff&action=list"
        class="btn btn--secondary btn--sm"><?= e(t('action.back')) ?></a>
     <h1 class="page-title">
         <?= $isEdit ? e(t('staff.edit')) : e(t('staff.add')) ?>
@@ -96,7 +96,7 @@ ob_start();
     </div>
 <?php endif; ?>
 
-<form method="POST" action="<?= e(APP_URL) ?>/public/index.php?page=staff&action=<?= $isEdit ? 'edit&id=' . $editId : 'create' ?>">
+<form method="POST" action="<?= e(APP_URL) ?>/index.php?page=staff&action=<?= $isEdit ? 'edit&id=' . $editId : 'create' ?>">
     <div class="card">
         <div class="form-group">
             <label class="form-label" for="first_name"><?= e(t('staff.first_name')) ?></label>

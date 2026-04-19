@@ -8,7 +8,7 @@ Auth::requireRole('is_administrator');
 $activeSeason = getActiveSeason();
 if ($activeSeason === null) {
     $_SESSION['flash'] = t('dashboard.no_season');
-    redirect(APP_URL . '/public/index.php?page=settings');
+    redirect(APP_URL . '/index.php?page=settings');
 }
 
 $seasonRepo = new SeasonRepository();
@@ -16,7 +16,7 @@ $team       = $seasonRepo->getTeamBySeason((int) $activeSeason['id']);
 
 if ($team === null) {
     $_SESSION['flash'] = t('error.general');
-    redirect(APP_URL . '/public/index.php?page=settings');
+    redirect(APP_URL . '/index.php?page=settings');
 }
 
 $playerSvc = new PlayerService();
@@ -38,7 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $newId = $playerSvc->createPlayer($data);
         $_SESSION['flash'] = t('player.saved');
-        redirect(APP_URL . '/public/index.php?page=squad&action=edit&id=' . $newId);
+        redirect(APP_URL . '/index.php?page=squad&action=edit&id=' . $newId);
 
     } catch (InvalidArgumentException $e) {
         $errors[] = $e->getMessage();
@@ -50,7 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 ob_start();
 ?>
 <div class="page-header">
-    <a href="<?= e(APP_URL) ?>/public/index.php?page=squad&action=manage"
+    <a href="<?= e(APP_URL) ?>/index.php?page=squad&action=manage"
        class="btn btn--secondary btn--sm"><?= e(t('action.back')) ?></a>
     <h1 class="page-title"><?= e(t('player.new')) ?></h1>
     <span></span>

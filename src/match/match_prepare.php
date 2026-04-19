@@ -12,7 +12,7 @@ $match = $matchRepo->getMatchById($id);
 
 if ($match === null) {
     $_SESSION['flash'] = t('match.not_found');
-    redirect(APP_URL . '/public/index.php?page=match');
+    redirect(APP_URL . '/index.php?page=match');
 }
 
 $teamId = (int) $match['team_id'];
@@ -30,13 +30,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'guest_squad_number' => $guestNumber !== '' ? (int) $guestNumber : null,
             ]);
         }
-        redirect(APP_URL . '/public/index.php?page=match&action=prepare&id=' . $id);
+        redirect(APP_URL . '/index.php?page=match&action=prepare&id=' . $id);
     }
 
     if ($postAction === 'remove_guest') {
         $mpId = (int) ($_POST['match_player_id'] ?? 0);
         $matchService->removeGuestPlayer($mpId);
-        redirect(APP_URL . '/public/index.php?page=match&action=prepare&id=' . $id);
+        redirect(APP_URL . '/index.php?page=match&action=prepare&id=' . $id);
     }
 
     if ($postAction === 'save_attendance') {
@@ -66,7 +66,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             );
         }
 
-        redirect(APP_URL . '/public/index.php?page=match&action=lineup&id=' . $id);
+        redirect(APP_URL . '/index.php?page=match&action=lineup&id=' . $id);
     }
 }
 
@@ -116,7 +116,7 @@ unset($_SESSION['flash']);
 ob_start();
 ?>
 <div class="page-header">
-    <a href="<?= e(APP_URL) ?>/public/index.php?page=match"
+    <a href="<?= e(APP_URL) ?>/index.php?page=match"
        class="btn btn--secondary btn--sm"><?= e(t('action.back')) ?></a>
     <h1 class="page-title" style="font-size:1rem;"><?= e($match['opponent']) ?> · <?= e($dateLabel) ?></h1>
     <span></span>
@@ -136,7 +136,7 @@ ob_start();
 </div>
 
 <form id="attendance-form" method="POST"
-      action="<?= e(APP_URL) ?>/public/index.php?page=match&action=prepare&id=<?= $id ?>">
+      action="<?= e(APP_URL) ?>/index.php?page=match&action=prepare&id=<?= $id ?>">
     <input type="hidden" name="_action" value="save_attendance">
 
     <div class="card">
@@ -207,7 +207,7 @@ ob_start();
                             <span class="badge badge--accent" style="margin-left:0.3rem;"><?= e(t('match.guest')) ?></span>
                         </span>
                         <form method="POST"
-                              action="<?= e(APP_URL) ?>/public/index.php?page=match&action=prepare&id=<?= $id ?>"
+                              action="<?= e(APP_URL) ?>/index.php?page=match&action=prepare&id=<?= $id ?>"
                               style="display:inline;">
                             <input type="hidden" name="_action" value="remove_guest">
                             <input type="hidden" name="match_player_id" value="<?= (int) $guest['id'] ?>">
@@ -233,7 +233,7 @@ ob_start();
 <!-- Add guest player -->
 <div class="card" style="margin-top:0.75rem;">
     <strong style="display:block; margin-bottom:0.5rem;"><?= e(t('match.guest.add')) ?></strong>
-    <form method="POST" action="<?= e(APP_URL) ?>/public/index.php?page=match&action=prepare&id=<?= $id ?>">
+    <form method="POST" action="<?= e(APP_URL) ?>/index.php?page=match&action=prepare&id=<?= $id ?>">
         <input type="hidden" name="_action" value="add_guest">
         <div class="form-group">
             <input type="text" name="guest_name" class="form-input"

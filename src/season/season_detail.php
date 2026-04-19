@@ -15,7 +15,7 @@ $season = $repo->getSeasonById($id);
 if ($season === null) {
     http_response_code(404);
     $_SESSION['flash'] = t('error.not_found');
-    redirect(APP_URL . '/public/index.php?page=season&action=list');
+    redirect(APP_URL . '/index.php?page=season&action=list');
 }
 
 $team   = $repo->getTeamBySeason($id);
@@ -40,7 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'end_date'   => $phase['end_date'],
             ]);
             $_SESSION['flash'] = t('action.save') . ' ✓';
-            redirect(APP_URL . '/public/index.php?page=season&action=detail&id=' . $id);
+            redirect(APP_URL . '/index.php?page=season&action=detail&id=' . $id);
         }
     }
 
@@ -48,7 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $days = array_map('intval', (array) ($_POST['training_days'] ?? []));
         $repo->setTrainingDays($teamId, $days);
         $_SESSION['flash'] = t('action.save') . ' ✓';
-        redirect(APP_URL . '/public/index.php?page=season&action=detail&id=' . $id);
+        redirect(APP_URL . '/index.php?page=season&action=detail&id=' . $id);
     }
 }
 
@@ -81,7 +81,7 @@ unset($_SESSION['flash']);
 ob_start();
 ?>
 <div class="page-header">
-    <a href="<?= e(APP_URL) ?>/public/index.php?page=season&action=list"
+    <a href="<?= e(APP_URL) ?>/index.php?page=season&action=list"
        class="btn btn--secondary btn--sm"><?= e(t('action.back')) ?></a>
     <h1 class="page-title"><?= e($season['name']) ?></h1>
     <?php if ($season['active']): ?>
@@ -125,7 +125,7 @@ ob_start();
 <!-- Phases -->
 <?php if ($season['has_phases'] && !empty($phases)): ?>
     <?php foreach ($phases as $phase): ?>
-        <form method="POST" action="<?= e(APP_URL) ?>/public/index.php?page=season&action=detail&id=<?= $id ?>">
+        <form method="POST" action="<?= e(APP_URL) ?>/index.php?page=season&action=detail&id=<?= $id ?>">
             <input type="hidden" name="_action" value="update_phase">
             <input type="hidden" name="phase_id" value="<?= (int) $phase['id'] ?>">
             <div class="card">
@@ -156,7 +156,7 @@ ob_start();
 <?php endif; ?>
 
 <!-- Training days -->
-<form method="POST" action="<?= e(APP_URL) ?>/public/index.php?page=season&action=detail&id=<?= $id ?>">
+<form method="POST" action="<?= e(APP_URL) ?>/index.php?page=season&action=detail&id=<?= $id ?>">
     <input type="hidden" name="_action" value="update_training_days">
     <div class="card">
         <label class="form-label"><?= e(t('season.training_days')) ?></label>
@@ -177,7 +177,7 @@ ob_start();
 
 <!-- Add manual training session -->
 <?php if ($teamId !== null): ?>
-<form method="POST" action="<?= e(APP_URL) ?>/public/index.php?page=season&action=add_training">
+<form method="POST" action="<?= e(APP_URL) ?>/index.php?page=season&action=add_training">
     <input type="hidden" name="team_id" value="<?= $teamId ?>">
     <div class="card">
         <label class="form-label"><?= e(t('season.add_training')) ?></label>

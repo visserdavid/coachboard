@@ -21,10 +21,10 @@ unset($_SESSION['flash']);
 ob_start();
 ?>
 <div class="page-header">
-    <a href="<?= e(APP_URL) ?>/public/index.php?page=settings"
+    <a href="<?= e(APP_URL) ?>/index.php?page=settings"
        class="btn btn--secondary btn--sm"><?= e(t('action.back')) ?></a>
     <h1 class="page-title"><?= e(t('season.title')) ?></h1>
-    <a href="<?= e(APP_URL) ?>/public/index.php?page=season&action=new" class="btn btn--primary btn--sm">
+    <a href="<?= e(APP_URL) ?>/index.php?page=season&action=new" class="btn btn--primary btn--sm">
         <?= e(t('season.new')) ?>
     </a>
 </div>
@@ -57,10 +57,10 @@ ob_start();
                     <?php endif; ?>
                 </div>
                 <div class="flex gap-1">
-                    <a href="<?= e(APP_URL) ?>/public/index.php?page=season&action=detail&id=<?= (int) $s['id'] ?>"
+                    <a href="<?= e(APP_URL) ?>/index.php?page=season&action=detail&id=<?= (int) $s['id'] ?>"
                        class="btn btn--secondary btn--sm"><?= e(t('action.edit')) ?></a>
                     <?php if (!$s['active']): ?>
-                        <form method="POST" action="<?= e(APP_URL) ?>/public/index.php?page=season&action=set_active"
+                        <form method="POST" action="<?= e(APP_URL) ?>/index.php?page=season&action=set_active"
                               onsubmit="return confirm(<?= e(json_encode(t('season.set_active_confirm'))) ?>)">
                             <input type="hidden" name="id" value="<?= (int) $s['id'] ?>">
                             <button type="submit" class="btn btn--accent btn--sm">

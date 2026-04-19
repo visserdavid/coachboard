@@ -111,7 +111,7 @@ ob_start();
                     </div>
                 </div>
             <?php else: ?>
-                <a href="<?= e(APP_URL) ?>/public/index.php?page=training&action=detail&id=<?= $sid ?>"
+                <a href="<?= e(APP_URL) ?>/index.php?page=training&action=detail&id=<?= $sid ?>"
                    class="card card--link">
                     <div class="flex-between">
                         <div>

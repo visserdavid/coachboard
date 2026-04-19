@@ -16,7 +16,7 @@ $session = $trainingRepo->getSessionById($id);
 
 if ($session === null) {
     $_SESSION['flash'] = t('error.not_found');
-    redirect(APP_URL . '/public/index.php?page=training');
+    redirect(APP_URL . '/index.php?page=training');
 }
 
 $teamId      = (int) $session['team_id'];
@@ -33,7 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $notes = trim($_POST['notes'] ?? '') ?: null;
         $trainingService->saveSessionContent($id, array_values($focus), $notes);
         $_SESSION['flash'] = t('training.content_saved');
-        redirect(APP_URL . '/public/index.php?page=training&action=detail&id=' . $id);
+        redirect(APP_URL . '/index.php?page=training&action=detail&id=' . $id);
     }
 
     if ($postAction === 'save_attendance' && !$isCancelled) {
@@ -63,7 +63,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         $trainingService->saveAttendance($id, $attendance);
         $_SESSION['flash'] = t('training.attendance_saved');
-        redirect(APP_URL . '/public/index.php?page=training&action=detail&id=' . $id);
+        redirect(APP_URL . '/index.php?page=training&action=detail&id=' . $id);
     }
 }
 
@@ -87,7 +87,7 @@ unset($_SESSION['flash']);
 ob_start();
 ?>
 <div class="page-header">
-    <a href="<?= e(APP_URL) ?>/public/index.php?page=training"
+    <a href="<?= e(APP_URL) ?>/index.php?page=training"
        class="btn btn--secondary btn--sm"><?= e(t('action.back')) ?></a>
     <h1 class="page-title" style="font-size:1rem;"><?= e($dateLabel) ?></h1>
     <span></span>
@@ -112,7 +112,7 @@ if (seasonHasPhases() && $session['phase_id'] !== null): ?>
 
 <!-- Cancel / Reinstate -->
 <?php if (!$isCancelled): ?>
-    <form method="POST" action="<?= e(APP_URL) ?>/public/index.php?page=training&action=cancel"
+    <form method="POST" action="<?= e(APP_URL) ?>/index.php?page=training&action=cancel"
           onsubmit="return confirm(<?= e(json_encode(t('training.cancel_confirm'))) ?>)">
         <input type="hidden" name="session_id" value="<?= $id ?>">
         <div style="margin-bottom:0.75rem; text-align:right;">
@@ -122,7 +122,7 @@ if (seasonHasPhases() && $session['phase_id'] !== null): ?>
         </div>
     </form>
 <?php else: ?>
-    <form method="POST" action="<?= e(APP_URL) ?>/public/index.php?page=training&action=reinstate">
+    <form method="POST" action="<?= e(APP_URL) ?>/index.php?page=training&action=reinstate">
         <input type="hidden" name="session_id" value="<?= $id ?>">
         <div style="margin-bottom:0.75rem; text-align:right;">
             <button type="submit" class="btn btn--secondary btn--sm">
@@ -153,7 +153,7 @@ if (seasonHasPhases() && $session['phase_id'] !== null): ?>
         <?php endif; ?>
     <?php else: ?>
         <form method="POST"
-              action="<?= e(APP_URL) ?>/public/index.php?page=training&action=detail&id=<?= $id ?>">
+              action="<?= e(APP_URL) ?>/index.php?page=training&action=detail&id=<?= $id ?>">
             <input type="hidden" name="_action" value="save_content">
             <div style="display:flex; flex-direction:column; gap:0.5rem; margin-bottom:0.75rem;">
                 <?php foreach (['attacking', 'defending', 'transitioning'] as $f): ?>
@@ -227,7 +227,7 @@ if (seasonHasPhases() && $session['phase_id'] !== null): ?>
         <?php endforeach; ?>
     <?php else: ?>
         <form method="POST"
-              action="<?= e(APP_URL) ?>/public/index.php?page=training&action=detail&id=<?= $id ?>">
+              action="<?= e(APP_URL) ?>/index.php?page=training&action=detail&id=<?= $id ?>">
             <input type="hidden" name="_action" value="save_attendance">
             <?php foreach ($players as $player): ?>
                 <?php

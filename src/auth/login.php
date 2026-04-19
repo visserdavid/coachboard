@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 // Already logged in — go straight to dashboard
 if (Auth::isLoggedIn()) {
-    redirect(APP_URL . '/public/index.php?page=dashboard');
+    redirect(APP_URL . '/index.php?page=dashboard');
 }
 
 $linkSent = false;
@@ -33,7 +33,7 @@ ob_start();
             <p><?= e(t('auth.link_sent')) ?></p>
         </div>
     <?php else: ?>
-        <form method="post" action="<?= e(APP_URL) ?>/public/index.php?page=auth&action=login"
+        <form method="post" action="<?= e(APP_URL) ?>/index.php?page=auth&action=login"
               style="width:100%; max-width:360px; margin-top:1.5rem;">
             <div class="form-group">
                 <label class="form-label" for="email"><?= e(t('auth.email_placeholder')) ?></label>

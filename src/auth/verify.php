@@ -5,14 +5,14 @@ declare(strict_types=1);
 $token = $_GET['token'] ?? '';
 
 if ($token === '') {
-    redirect(APP_URL . '/public/index.php?page=auth&action=login');
+    redirect(APP_URL . '/index.php?page=auth&action=login');
 }
 
 $authService = new AuthService();
 $user        = $authService->verifyToken($token);
 
 if ($user !== null) {
-    redirect(APP_URL . '/public/index.php?page=dashboard');
+    redirect(APP_URL . '/index.php?page=dashboard');
 }
 
 // Token invalid or expired — show error, never reveal the token value
@@ -26,7 +26,7 @@ ob_start();
     </h1>
     <div class="card" style="max-width:360px; width:100%; margin-top:1.5rem; text-align:center;">
         <p class="text-danger mb-2"><?= e(t('auth.invalid_token')) ?></p>
-        <a href="<?= e(APP_URL) ?>/public/index.php?page=auth&action=login" class="btn btn--primary btn--full">
+        <a href="<?= e(APP_URL) ?>/index.php?page=auth&action=login" class="btn btn--primary btn--full">
             <?= e(t('auth.login')) ?>
         </a>
     </div>

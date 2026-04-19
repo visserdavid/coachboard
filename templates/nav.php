@@ -3,7 +3,7 @@
 <div class="flash-message" role="alert"><?= e($_SESSION['flash']) ?></div>
 <?php unset($_SESSION['flash']); endif; ?>
 <nav class="bottom-nav" role="navigation" aria-label="Main navigation">
-    <a href="<?= APP_URL ?>/public/index.php?page=dashboard"
+    <a href="<?= APP_URL ?>/index.php?page=dashboard"
        class="nav-item <?= ($activePage ?? '') === 'dashboard' ? 'nav-item--active' : '' ?>"
        aria-label="<?= e(t('nav.dashboard')) ?>">
         <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -12,7 +12,7 @@
         </svg>
         <span class="nav-label"><?= e(t('nav.dashboard')) ?></span>
     </a>
-    <a href="<?= APP_URL ?>/public/index.php?page=match"
+    <a href="<?= APP_URL ?>/index.php?page=match"
        class="nav-item <?= ($activePage ?? '') === 'match' ? 'nav-item--active' : '' ?>"
        aria-label="<?= e(t('nav.matches')) ?>">
         <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -22,7 +22,7 @@
         </svg>
         <span class="nav-label"><?= e(t('nav.matches')) ?></span>
     </a>
-    <a href="<?= APP_URL ?>/public/index.php?page=training"
+    <a href="<?= APP_URL ?>/index.php?page=training"
        class="nav-item <?= ($activePage ?? '') === 'training' ? 'nav-item--active' : '' ?>"
        aria-label="<?= e(t('nav.training')) ?>">
         <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -31,7 +31,7 @@
         </svg>
         <span class="nav-label"><?= e(t('nav.training')) ?></span>
     </a>
-    <a href="<?= APP_URL ?>/public/index.php?page=squad"
+    <a href="<?= APP_URL ?>/index.php?page=squad"
        class="nav-item <?= ($activePage ?? '') === 'squad' ? 'nav-item--active' : '' ?>"
        aria-label="<?= e(t('nav.squad')) ?>">
         <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -40,7 +40,7 @@
         </svg>
         <span class="nav-label"><?= e(t('nav.squad')) ?></span>
     </a>
-    <a href="<?= APP_URL ?>/public/index.php?page=settings"
+    <a href="<?= APP_URL ?>/index.php?page=settings"
        class="nav-item <?= ($activePage ?? '') === 'settings' ? 'nav-item--active' : '' ?>"
        aria-label="<?= e(t('nav.settings')) ?>">
         <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -51,7 +51,7 @@
     </a>
 </nav>
 <?php if (Auth::isLoggedIn()): ?>
-<a href="<?= e(APP_URL) ?>/public/index.php?page=auth&action=logout"
+<a href="<?= e(APP_URL) ?>/index.php?page=auth&action=logout"
    class="logout-link"
    aria-label="<?= e(t('auth.logout')) ?>">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">

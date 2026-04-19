@@ -286,7 +286,7 @@ switch ($page) {
             <div class="card">
                 <p class="text-muted"><?= e(t('dashboard.no_season')) ?></p>
                 <?php if (!empty($_SESSION['user']['is_administrator'])): ?>
-                    <a href="<?= e(APP_URL) ?>/public/index.php?page=season&action=new"
+                    <a href="<?= e(APP_URL) ?>/index.php?page=season&action=new"
                        class="btn btn--primary btn--sm mt-1"><?= e(t('season.new')) ?></a>
                 <?php endif; ?>
             </div>
@@ -296,7 +296,7 @@ switch ($page) {
         <div class="card">
             <p class="text-muted text-sm mb-1"><?= e(t('dashboard.upcoming_match')) ?></p>
             <?php if ($dashNext !== null): ?>
-                <a href="<?= e(APP_URL) ?>/public/index.php?page=match&action=<?= $dashNext['status'] === 'active' ? 'live' : 'prepare' ?>&id=<?= (int) $dashNext['id'] ?>"
+                <a href="<?= e(APP_URL) ?>/index.php?page=match&action=<?= $dashNext['status'] === 'active' ? 'live' : 'prepare' ?>&id=<?= (int) $dashNext['id'] ?>"
                    style="text-decoration:none;color:inherit;">
                     <strong><?= e($dashNext['opponent']) ?></strong>
                     <span class="text-sm text-muted" style="margin-left:0.5rem;">
@@ -356,7 +356,7 @@ switch ($page) {
             <?php else: ?>
                 <p class="text-muted"><?= e(t('dashboard.no_top_scorer')) ?></p>
             <?php endif; ?>
-            <a href="<?= e(APP_URL) ?>/public/index.php?page=stats"
+            <a href="<?= e(APP_URL) ?>/index.php?page=stats"
                class="text-sm" style="color:var(--color-primary);text-decoration:none;display:block;margin-top:0.5rem;">
                 <?= e(t('stats.title')) ?> →
             </a>
@@ -366,7 +366,7 @@ switch ($page) {
         break;
 
     case 'matches':
-        redirect(APP_URL . '/public/index.php?page=match');
+        redirect(APP_URL . '/index.php?page=match');
         break;
 
     case 'settings':
@@ -380,7 +380,7 @@ switch ($page) {
             <div class="flash-message"><?= e($settingsFlash) ?></div>
         <?php endif; ?>
         <?php if (!empty($_SESSION['user']['is_administrator']) || !empty($_SESSION['user']['is_assistant'])): ?>
-        <a href="<?= e(APP_URL) ?>/public/index.php?page=squad&action=manage"
+        <a href="<?= e(APP_URL) ?>/index.php?page=squad&action=manage"
            class="card card--link">
             <div class="flex-between">
                 <div>
@@ -392,7 +392,7 @@ switch ($page) {
         </a>
         <?php endif; ?>
         <?php if (!empty($_SESSION['user']['is_administrator'])): ?>
-        <a href="<?= e(APP_URL) ?>/public/index.php?page=season"
+        <a href="<?= e(APP_URL) ?>/index.php?page=season"
            class="card card--link">
             <div class="flex-between">
                 <div>
@@ -402,7 +402,7 @@ switch ($page) {
                 <span class="text-muted">›</span>
             </div>
         </a>
-        <a href="<?= e(APP_URL) ?>/public/index.php?page=staff"
+        <a href="<?= e(APP_URL) ?>/index.php?page=staff"
            class="card card--link">
             <div class="flex-between">
                 <div>
@@ -412,7 +412,7 @@ switch ($page) {
                 <span class="text-muted">›</span>
             </div>
         </a>
-        <a href="<?= e(APP_URL) ?>/public/index.php?page=formation"
+        <a href="<?= e(APP_URL) ?>/index.php?page=formation"
            class="card card--link">
             <div class="flex-between">
                 <div>
@@ -431,7 +431,7 @@ switch ($page) {
         ?>
         <div class="text-center" style="padding: 3rem 1rem;">
             <p class="text-muted"><?= e(t('error.not_found')) ?></p>
-            <a href="<?= e(APP_URL) ?>/public/index.php" class="btn btn--primary mt-2">
+            <a href="<?= e(APP_URL) ?>/index.php" class="btn btn--primary mt-2">
                 <?= e(t('nav.dashboard')) ?>
             </a>
         </div>

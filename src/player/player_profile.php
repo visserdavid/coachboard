@@ -15,7 +15,7 @@ $statsRepo  = new StatsRepository();
 $player = $playerRepo->getPlayerById($id);
 if ($player === null) {
     $_SESSION['flash'] = t('error.not_found');
-    redirect(APP_URL . '/public/index.php?page=squad');
+    redirect(APP_URL . '/index.php?page=squad');
 }
 
 // Determine the season for this player via their team
@@ -62,11 +62,11 @@ $hasSkills  = $skills !== null && array_filter(
 ob_start();
 ?>
 <div class="page-header">
-    <a href="<?= e(APP_URL) ?>/public/index.php?page=squad"
+    <a href="<?= e(APP_URL) ?>/index.php?page=squad"
        class="btn btn--secondary btn--sm"><?= e(t('action.back')) ?></a>
     <span></span>
     <?php if ($canEdit): ?>
-        <a href="<?= e(APP_URL) ?>/public/index.php?page=squad&action=edit&id=<?= $id ?>"
+        <a href="<?= e(APP_URL) ?>/index.php?page=squad&action=edit&id=<?= $id ?>"
            class="btn btn--secondary btn--sm"><?= e(t('action.edit')) ?></a>
     <?php else: ?>
         <span></span>

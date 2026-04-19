@@ -21,10 +21,10 @@ foreach ($formations as $f) {
 ob_start();
 ?>
 <div class="page-header">
-    <a href="<?= e(APP_URL) ?>/public/index.php?page=settings"
+    <a href="<?= e(APP_URL) ?>/index.php?page=settings"
        class="btn btn--secondary btn--sm"><?= e(t('action.back')) ?></a>
     <h1 class="page-title"><?= e(t('formation.title')) ?></h1>
-    <a href="<?= e(APP_URL) ?>/public/index.php?page=formation&action=create"
+    <a href="<?= e(APP_URL) ?>/index.php?page=formation&action=create"
        class="btn btn--primary btn--sm"><?= e(t('formation.add')) ?></a>
 </div>
 
@@ -55,18 +55,18 @@ ob_start();
                 <div class="flex gap-1" style="flex-shrink:0;margin-left:0.5rem;">
                     <?php if (!$f['is_default']): ?>
                         <form method="POST"
-                              action="<?= e(APP_URL) ?>/public/index.php?page=formation&action=set_default">
+                              action="<?= e(APP_URL) ?>/index.php?page=formation&action=set_default">
                             <input type="hidden" name="id" value="<?= (int) $f['id'] ?>">
                             <button type="submit" class="btn btn--secondary btn--sm">
                                 <?= e(t('formation.set_default')) ?>
                             </button>
                         </form>
                     <?php endif; ?>
-                    <a href="<?= e(APP_URL) ?>/public/index.php?page=formation&action=edit&id=<?= (int) $f['id'] ?>"
+                    <a href="<?= e(APP_URL) ?>/index.php?page=formation&action=edit&id=<?= (int) $f['id'] ?>"
                        class="btn btn--secondary btn--sm"><?= e(t('action.edit')) ?></a>
                     <?php if (!$f['is_default']): ?>
                         <form method="POST"
-                              action="<?= e(APP_URL) ?>/public/index.php?page=formation&action=delete"
+                              action="<?= e(APP_URL) ?>/index.php?page=formation&action=delete"
                               onsubmit="return confirm(<?= e(json_encode(t('formation.delete_confirm'))) ?>)">
                             <input type="hidden" name="id" value="<?= (int) $f['id'] ?>">
                             <button type="submit" class="btn btn--danger btn--sm">

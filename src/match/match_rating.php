@@ -2,7 +2,7 @@
 declare(strict_types=1);
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    redirect(APP_URL . '/public/index.php?page=match');
+    redirect(APP_URL . '/index.php?page=match');
 }
 
 $matchId    = (int) ($_POST['match_id'] ?? ($_GET['id'] ?? 0));
@@ -10,7 +10,7 @@ $matchRepo  = new MatchRepository();
 $match      = $matchRepo->getMatchById($matchId);
 
 if ($match === null || $match['status'] !== 'finished') {
-    redirect(APP_URL . '/public/index.php?page=match');
+    redirect(APP_URL . '/index.php?page=match');
 }
 
 $playerIds = array_map('intval', (array) ($_POST['player_ids'] ?? []));
@@ -36,4 +36,4 @@ foreach ($playerIds as $playerId) {
 }
 
 $_SESSION['flash'] = t('rating.saved');
-redirect(APP_URL . '/public/index.php?page=match&action=review&id=' . $matchId);
+redirect(APP_URL . '/index.php?page=match&action=review&id=' . $matchId);

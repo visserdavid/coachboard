@@ -59,7 +59,7 @@ ob_start();
     <p class="text-muted"><?= e(t('player.no_players')) ?></p>
 <?php else: ?>
     <?php foreach ($players as $player): ?>
-        <a href="<?= e(APP_URL) ?>/public/index.php?page=squad&action=profile&id=<?= (int) $player['id'] ?>"
+        <a href="<?= e(APP_URL) ?>/index.php?page=squad&action=profile&id=<?= (int) $player['id'] ?>"
            class="card card--link">
             <div class="flex" style="align-items:center; gap:0.75rem;">
                 <?php if (!empty($player['photo_path'])): ?>

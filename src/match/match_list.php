@@ -55,7 +55,7 @@ ob_start();
 <div class="page-header">
     <h1 class="page-title"><?= e(t('match.title')) ?></h1>
     <?php if ($teamId): ?>
-        <a href="<?= e(APP_URL) ?>/public/index.php?page=match&action=create"
+        <a href="<?= e(APP_URL) ?>/index.php?page=match&action=create"
            class="btn btn--primary btn--sm"><?= e(t('match.new')) ?></a>
     <?php endif; ?>
 </div>
@@ -110,7 +110,7 @@ ob_start();
                 <div id="match-anchor"></div>
             <?php endif; ?>
 
-            <a href="<?= e(APP_URL) ?>/public/index.php?page=match&action=<?= $isFinished ? 'review' : ($isActive ? 'live' : 'prepare') ?>&id=<?= $mid ?>"
+            <a href="<?= e(APP_URL) ?>/index.php?page=match&action=<?= $isFinished ? 'review' : ($isActive ? 'live' : 'prepare') ?>&id=<?= $mid ?>"
                class="card card--link">
                 <div class="flex-between">
                     <div>

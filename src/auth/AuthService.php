@@ -100,7 +100,7 @@ class AuthService
 
     private function sendMagicLinkEmail(string $to, string $token): bool
     {
-        $link    = APP_URL . '/public/index.php?page=auth&action=verify&token=' . urlencode($token);
+        $link    = APP_URL . '/index.php?page=auth&action=verify&token=' . urlencode($token);
         $subject = t('auth.email_subject');
 
         $body = '<p>' . e(t('auth.email_body')) . '</p>'

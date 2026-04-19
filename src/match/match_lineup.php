@@ -14,7 +14,7 @@ $match = $matchRepo->getMatchById($id);
 
 if ($match === null) {
     $_SESSION['flash'] = t('match.not_found');
-    redirect(APP_URL . '/public/index.php?page=match');
+    redirect(APP_URL . '/index.php?page=match');
 }
 
 $teamId = (int) $match['team_id'];
@@ -51,17 +51,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ]);
         }
 
-        redirect(APP_URL . '/public/index.php?page=match&action=lineup&id=' . $id);
+        redirect(APP_URL . '/index.php?page=match&action=lineup&id=' . $id);
     }
 
     if ($postAction === 'confirm') {
         $success = $matchService->confirmPreparation($id);
         if ($success) {
             $_SESSION['flash'] = t('match.status.prepared');
-            redirect(APP_URL . '/public/index.php?page=match');
+            redirect(APP_URL . '/index.php?page=match');
         }
         $_SESSION['flash'] = t('match.lineup.incomplete');
-        redirect(APP_URL . '/public/index.php?page=match&action=lineup&id=' . $id);
+        redirect(APP_URL . '/index.php?page=match&action=lineup&id=' . $id);
     }
 
     if ($postAction === 'load_template') {
@@ -74,7 +74,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $pdo->prepare('DELETE FROM match_player WHERE match_id = ? AND is_guest = 0')->execute([$id]);
             $matchService->ensureAllPresentPlayersInRoster($id, $teamId);
         }
-        redirect(APP_URL . '/public/index.php?page=match&action=lineup&id=' . $id);
+        redirect(APP_URL . '/index.php?page=match&action=lineup&id=' . $id);
     }
 
     if ($postAction === 'change_formation') {
@@ -82,7 +82,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($formationId > 0) {
             $matchRepo->setFormation($id, $formationId);
         }
-        redirect(APP_URL . '/public/index.php?page=match&action=lineup&id=' . $id);
+        redirect(APP_URL . '/index.php?page=match&action=lineup&id=' . $id);
     }
 }
 
@@ -161,7 +161,7 @@ unset($_SESSION['flash']);
 ob_start();
 ?>
 <div class="page-header">
-    <a href="<?= e(APP_URL) ?>/public/index.php?page=match&action=prepare&id=<?= $id ?>"
+    <a href="<?= e(APP_URL) ?>/index.php?page=match&action=prepare&id=<?= $id ?>"
        class="btn btn--secondary btn--sm"><?= e(t('action.back')) ?></a>
     <h1 class="page-title" style="font-size:1rem;"><?= e($match['opponent']) ?> · <?= e($dateLabel) ?></h1>
     <span></span>
@@ -185,7 +185,7 @@ ob_start();
     <div class="form-group" style="margin-bottom:0.75rem;">
         <label class="form-label"><?= e(t('match.lineup.template')) ?></label>
         <form method="POST"
-              action="<?= e(APP_URL) ?>/public/index.php?page=match&action=lineup&id=<?= $id ?>">
+              action="<?= e(APP_URL) ?>/index.php?page=match&action=lineup&id=<?= $id ?>">
             <input type="hidden" name="_action" value="load_template">
             <div style="display:flex; gap:0.5rem;">
                 <select name="template_match_id" class="form-select" style="flex:1;">
@@ -207,7 +207,7 @@ ob_start();
         <div class="form-group" style="margin-bottom:0;">
             <label class="form-label"><?= e(t('match.lineup.formation')) ?></label>
             <form method="POST"
-                  action="<?= e(APP_URL) ?>/public/index.php?page=match&action=lineup&id=<?= $id ?>">
+                  action="<?= e(APP_URL) ?>/index.php?page=match&action=lineup&id=<?= $id ?>">
                 <input type="hidden" name="_action" value="change_formation">
                 <div style="display:flex; gap:0.5rem;">
                     <select name="formation_id" class="form-select" style="flex:1;">
@@ -334,7 +334,7 @@ ob_start();
             <?= e(t('match.lineup.incomplete')) ?> (<?= $starterCount ?>/11)
         </p>
     <?php endif; ?>
-    <form method="POST" action="<?= e(APP_URL) ?>/public/index.php?page=match&action=lineup&id=<?= $id ?>"
+    <form method="POST" action="<?= e(APP_URL) ?>/index.php?page=match&action=lineup&id=<?= $id ?>"
           id="confirm-form"
           onsubmit="return confirm(<?= e(json_encode(t('match.lineup.confirm_dialog'))) ?>)">
         <input type="hidden" name="_action" value="confirm">
@@ -367,7 +367,7 @@ ob_start();
 
 <!-- Hidden form for saving a single position assignment -->
 <form id="assign-form" method="POST"
-      action="<?= e(APP_URL) ?>/public/index.php?page=match&action=lineup&id=<?= $id ?>">
+      action="<?= e(APP_URL) ?>/index.php?page=match&action=lineup&id=<?= $id ?>">
     <input type="hidden" name="_action" value="save_lineup">
     <div id="assign-positions-container"></div>
 </form>

@@ -5,7 +5,7 @@ require_once dirname(__DIR__, 2) . '/src/season/SeasonRepository.php';
 require_once dirname(__DIR__, 2) . '/src/season/SeasonService.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    redirect(APP_URL . '/public/index.php?page=season&action=list');
+    redirect(APP_URL . '/index.php?page=season&action=list');
 }
 
 $id      = (int) ($_POST['id'] ?? 0);
@@ -23,4 +23,4 @@ if ($service->setActiveSeason($id)) {
     $_SESSION['flash'] = t('error.general');
 }
 
-redirect(APP_URL . '/public/index.php?page=season&action=list');
+redirect(APP_URL . '/index.php?page=season&action=list');

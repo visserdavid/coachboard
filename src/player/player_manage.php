@@ -18,11 +18,11 @@ unset($_SESSION['flash']);
 ob_start();
 ?>
 <div class="page-header">
-    <a href="<?= e(APP_URL) ?>/public/index.php?page=settings"
+    <a href="<?= e(APP_URL) ?>/index.php?page=settings"
        class="btn btn--secondary btn--sm"><?= e(t('action.back')) ?></a>
     <h1 class="page-title"><?= e(t('settings.squad')) ?></h1>
     <?php if ($team !== null): ?>
-        <a href="<?= e(APP_URL) ?>/public/index.php?page=squad&action=create"
+        <a href="<?= e(APP_URL) ?>/index.php?page=squad&action=create"
            class="btn btn--primary btn--sm"><?= e(t('player.new')) ?></a>
     <?php else: ?>
         <span></span>
@@ -62,9 +62,9 @@ ob_start();
                 </div>
                 <div class="flex gap-1">
                     <?php if (!$isDeleted): ?>
-                        <a href="<?= e(APP_URL) ?>/public/index.php?page=squad&action=edit&id=<?= (int) $player['id'] ?>"
+                        <a href="<?= e(APP_URL) ?>/index.php?page=squad&action=edit&id=<?= (int) $player['id'] ?>"
                            class="btn btn--secondary btn--sm"><?= e(t('action.edit')) ?></a>
-                        <form method="POST" action="<?= e(APP_URL) ?>/public/index.php?page=squad&action=delete"
+                        <form method="POST" action="<?= e(APP_URL) ?>/index.php?page=squad&action=delete"
                               onsubmit="return confirm(<?= e(json_encode(t('player.delete_confirm'))) ?>)">
                             <input type="hidden" name="id" value="<?= (int) $player['id'] ?>">
                             <button type="submit" class="btn btn--danger btn--sm">
@@ -72,7 +72,7 @@ ob_start();
                             </button>
                         </form>
                     <?php else: ?>
-                        <form method="POST" action="<?= e(APP_URL) ?>/public/index.php?page=squad&action=restore">
+                        <form method="POST" action="<?= e(APP_URL) ?>/index.php?page=squad&action=restore">
                             <input type="hidden" name="id" value="<?= (int) $player['id'] ?>">
                             <button type="submit" class="btn btn--secondary btn--sm">
                                 <?= e(t('player.restore')) ?>

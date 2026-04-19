@@ -97,7 +97,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['flash'] = t('season.created') . ' '
                 . t('season.schedule_generated', ['count' => $count]);
 
-            redirect(APP_URL . '/public/index.php?page=season&action=detail&id=' . $seasonId);
+            redirect(APP_URL . '/index.php?page=season&action=detail&id=' . $seasonId);
 
         } catch (InvalidArgumentException $e) {
             $errors[] = $e->getMessage();
@@ -112,7 +112,7 @@ $existingSeasons = $repo->getAllSeasons();
 ob_start();
 ?>
 <div class="page-header">
-    <a href="<?= e(APP_URL) ?>/public/index.php?page=season&action=list"
+    <a href="<?= e(APP_URL) ?>/index.php?page=season&action=list"
        class="btn btn--secondary btn--sm"><?= e(t('action.back')) ?></a>
     <h1 class="page-title"><?= e(t('season.new')) ?></h1>
     <span></span>

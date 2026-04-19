@@ -11,20 +11,20 @@ $match = $matchRepo->getMatchById($id);
 
 if ($match === null) {
     $_SESSION['flash'] = t('match.not_found');
-    redirect(APP_URL . '/public/index.php?page=match');
+    redirect(APP_URL . '/index.php?page=match');
 }
 
 if ($match['status'] === 'finished') {
-    redirect(APP_URL . '/public/index.php?page=match&action=review&id=' . $id);
+    redirect(APP_URL . '/index.php?page=match&action=review&id=' . $id);
 }
 
 if (!in_array($match['status'], ['prepared', 'active'], true)) {
-    redirect(APP_URL . '/public/index.php?page=match');
+    redirect(APP_URL . '/index.php?page=match');
 }
 
 $matchId = (int) $match['id'];
 $teamId  = (int) $match['team_id'];
-$backUrl = APP_URL . '/public/index.php?page=match&action=live&id=' . $matchId;
+$backUrl = APP_URL . '/index.php?page=match&action=live&id=' . $matchId;
 
 // POST handlers
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -138,7 +138,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $matchService->stopHalf($matchId, $halfNum);
             $ok = $matchService->closeMatch($matchId, $goalsScored, $goalsConceded);
             if ($ok) {
-                redirect(APP_URL . '/public/index.php?page=match&action=review&id=' . $matchId);
+                redirect(APP_URL . '/index.php?page=match&action=review&id=' . $matchId);
             }
             break;
     }
@@ -255,7 +255,7 @@ unset($_SESSION['flash']);
 ob_start();
 ?>
 <div class="page-header">
-    <a href="<?= e(APP_URL) ?>/public/index.php?page=match"
+    <a href="<?= e(APP_URL) ?>/index.php?page=match"
        class="btn btn--secondary btn--sm"><?= e(t('action.back')) ?></a>
     <h1 class="page-title" style="font-size:1rem;">
         <?= e($match['opponent']) ?> · <?= e($dateLabel) ?>
