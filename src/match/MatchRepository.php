@@ -439,4 +439,69 @@ class MatchRepository
         );
         return $stmt->execute([$goalsScored, $goalsConceded, $matchId]);
     }
+
+    // -------------------------------------------------------------------------
+    // Post-match ratings
+    // -------------------------------------------------------------------------
+
+    public function getMatchRatings(int $matchId): array
+    {
+        $stmt = $this->pdo->prepare(
+            'SELECT * FROM match_rating WHERE match_id = ?'
+        );
+        $stmt->execute([$matchId]);
+        $result = [];
+        foreach ($stmt->fetchAll() as $row) {
+            $result[(int) $row['player_id']] = $row;
+        }
+        return $result;
+    }
+
+    public function upsertMatchRating(int $matchId, int $playerId, array $skills): bool
+    {
+        $valid  = ['pace', 'shooting', 'passing', 'dribbling', 'defending', 'physicality'];
+        $values = [];
+        foreach ($valid as $skill) {
+            $v = $skills[$skill] ?? null;
+            $values[$skill] = ($v !== null && $v !== '') ? (int) $v : null;
+        }
+
+        $hasAny = array_filter($values, fn($v) => $v !== null);
+        if (empty($hasAny)) {
+            return true;
+        }
+
+        $checkStmt = $this->pdo->prepare(
+            'SELECT id FROM match_rating WHERE match_id = ? AND player_id = ? LIMIT 1'
+        );
+        $checkStmt->execute([$matchId, $playerId]);
+        $existing = $checkStmt->fetch();
+
+        if ($existing) {
+            $setClauses = [];
+            $params     = [];
+            foreach ($valid as $skill) {
+                if ($values[$skill] !== null) {
+                    $setClauses[] = $skill . ' = ?';
+                    $params[]     = $values[$skill];
+                }
+            }
+            $params[] = $matchId;
+            $params[] = $playerId;
+            $stmt = $this->pdo->prepare(
+                'UPDATE match_rating SET ' . implode(', ', $setClauses) . ', updated_at = NOW() WHERE match_id = ? AND player_id = ?'
+            );
+            return $stmt->execute($params);
+        }
+
+        $stmt = $this->pdo->prepare(
+            'INSERT INTO match_rating (match_id, player_id, pace, shooting, passing, dribbling, defending, physicality)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+        );
+        return $stmt->execute([
+            $matchId, $playerId,
+            $values['pace'], $values['shooting'], $values['passing'],
+            $values['dribbling'], $values['defending'], $values['physicality'],
+        ]);
+    }
 }

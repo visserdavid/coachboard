@@ -115,6 +115,9 @@ if ($page === 'match') {
         case 'review':
             require dirname(__DIR__) . '/src/match/match_review.php';
             break;
+        case 'rate':
+            require dirname(__DIR__) . '/src/match/match_rating.php';
+            break;
         default:
             require dirname(__DIR__) . '/src/match/match_list.php';
             break;
