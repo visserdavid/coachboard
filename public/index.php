@@ -12,6 +12,8 @@ require_once dirname(__DIR__) . '/src/season/SeasonRepository.php';
 require_once dirname(__DIR__) . '/src/season/SeasonService.php';
 require_once dirname(__DIR__) . '/src/player/PlayerRepository.php';
 require_once dirname(__DIR__) . '/src/player/PlayerService.php';
+require_once dirname(__DIR__) . '/src/training/TrainingRepository.php';
+require_once dirname(__DIR__) . '/src/training/TrainingService.php';
 
 // PHPMailer autoloader (when installed via Composer)
 $autoload = dirname(__DIR__) . '/vendor/autoload.php';
@@ -92,6 +94,25 @@ if ($page === 'squad') {
     exit;
 }
 
+// Training pages manage their own output and layout
+if ($page === 'training') {
+    switch ($action) {
+        case 'detail':
+            require dirname(__DIR__) . '/src/training/training_detail.php';
+            break;
+        case 'cancel':
+            require dirname(__DIR__) . '/src/training/training_cancel.php';
+            break;
+        case 'reinstate':
+            require dirname(__DIR__) . '/src/training/training_reinstate.php';
+            break;
+        default:
+            require dirname(__DIR__) . '/src/training/training_list.php';
+            break;
+    }
+    exit;
+}
+
 // Season pages manage their own output and layout (like auth pages)
 if ($page === 'season') {
     Auth::requireRole('is_administrator');
@@ -167,15 +188,6 @@ switch ($page) {
             <h1 class="page-title"><?= e(t('match.title')) ?></h1>
         </div>
         <p class="text-muted"><?= e(t('match.no_matches')) ?></p>
-        <?php
-        break;
-
-    case 'training':
-        ?>
-        <div class="page-header">
-            <h1 class="page-title"><?= e(t('training.title')) ?></h1>
-        </div>
-        <p class="text-muted"><?= e(t('training.no_sessions')) ?></p>
         <?php
         break;
 

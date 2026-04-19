@@ -438,3 +438,59 @@ input, select, textarea {
 .player-circle--sm  { width: 36px; height: 36px; }
 .player-circle--md  { width: 48px; height: 48px; font-size: var(--font-size-base); }
 .player-circle--lg  { width: 72px; height: 72px; font-size: var(--font-size-xl); }
+
+/* ============================================================
+   Training focus icons
+   ============================================================ */
+.training-focus-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-radius: var(--radius-sm);
+    flex-shrink: 0;
+}
+
+.training-focus-icon--attacking  { color: var(--color-accent);   background: #fde8d8; }
+.training-focus-icon--defending  { color: var(--color-primary);  background: #dce8f8; }
+.training-focus-icon--transitioning { color: var(--color-success); background: #d4edda; }
+
+/* ============================================================
+   Attendance selector rows
+   ============================================================ */
+.attendance-row {
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.attendance-row:last-child {
+    border-bottom: none;
+}
+
+.attendance-buttons {
+    display: flex;
+    gap: 0.4rem;
+    margin-top: 0.4rem;
+    flex-wrap: wrap;
+}
+
+.att-btn {
+    padding: 0.3rem 0.75rem;
+    border-radius: var(--radius-full);
+    border: 1.5px solid var(--color-border);
+    background: transparent;
+    color: var(--color-text);
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.att-btn--present.att-btn--active  { border-color: var(--color-success); background: #d4edda; color: var(--color-success); }
+.att-btn--absent.att-btn--active   { border-color: var(--color-danger);  background: #fde8e8; color: var(--color-danger); }
+.att-btn--injured.att-btn--active  { border-color: var(--color-accent);  background: #fde8d8; color: var(--color-accent); }
+
+.att-sub {
+    margin-top: 0.4rem;
+}
