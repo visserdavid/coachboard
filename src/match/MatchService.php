@@ -170,6 +170,302 @@ class MatchService
         return array_map('intval', array_column($stmt->fetchAll(), 'player_id'));
     }
 
+    // -------------------------------------------------------------------------
+    // Live match: halves
+    // -------------------------------------------------------------------------
+
+    public function startHalf(int $matchId, int $halfNumber): bool
+    {
+        $half = $this->repo->getHalfByNumber($matchId, $halfNumber);
+
+        if ($half === null) {
+            $halfId = $this->repo->createHalf($matchId, $halfNumber);
+        } else {
+            if ($half['started_at'] !== null && $half['stopped_at'] === null) {
+                return false; // already running
+            }
+            $halfId = (int) $half['id'];
+        }
+
+        $this->repo->startHalf($halfId);
+        $this->repo->setStatus($matchId, 'active');
+        return true;
+    }
+
+    public function stopHalf(int $matchId, int $halfNumber): bool
+    {
+        $half = $this->repo->getHalfByNumber($matchId, $halfNumber);
+        if ($half === null || $half['started_at'] === null || $half['stopped_at'] !== null) {
+            return false;
+        }
+        return $this->repo->stopHalf((int) $half['id']);
+    }
+
+    public function resumeHalf(int $matchId, int $halfNumber): bool
+    {
+        $half = $this->repo->getHalfByNumber($matchId, $halfNumber);
+        if ($half === null || $half['stopped_at'] === null) {
+            return false;
+        }
+        return $this->repo->resumeHalf((int) $half['id']);
+    }
+
+    // -------------------------------------------------------------------------
+    // Live match: events
+    // -------------------------------------------------------------------------
+
+    public function registerGoal(int $matchId, array $data): int
+    {
+        $data['match_id']   = $matchId;
+        $data['event_type'] = $data['event_type'] ?? 'goal';
+        $data['half']       = $data['half']   ?? $this->getCurrentHalfNumber($matchId);
+        $data['minute']     = $data['minute'] ?? $this->getCurrentMinute($matchId);
+        return $this->repo->createEvent($data);
+    }
+
+    public function registerCard(int $matchId, array $data): int
+    {
+        $data['match_id'] = $matchId;
+        $data['half']     = $data['half']   ?? $this->getCurrentHalfNumber($matchId);
+        $data['minute']   = $data['minute'] ?? $this->getCurrentMinute($matchId);
+        return $this->repo->createEvent($data);
+    }
+
+    public function registerNote(int $matchId, array $data): int
+    {
+        $data['match_id']   = $matchId;
+        $data['event_type'] = 'note';
+        $data['half']       = $data['half']   ?? $this->getCurrentHalfNumber($matchId);
+        $data['minute']     = $data['minute'] ?? $this->getCurrentMinute($matchId);
+        return $this->repo->createEvent($data);
+    }
+
+    public function deleteEvent(int $eventId): bool
+    {
+        return $this->repo->deleteEvent($eventId);
+    }
+
+    // -------------------------------------------------------------------------
+    // Live match: substitutions
+    // -------------------------------------------------------------------------
+
+    public function registerSubstitution(int $matchId, array $data): int
+    {
+        $data['match_id'] = $matchId;
+        $data['half']     = $data['half']   ?? $this->getCurrentHalfNumber($matchId);
+        $data['minute']   = $data['minute'] ?? $this->getCurrentMinute($matchId);
+
+        // Move players on the pitch
+        $offPlayer = $this->repo->getMatchPlayerByPlayerId($matchId, (int) $data['player_off_id']);
+        $onPlayer  = $this->repo->getMatchPlayerByPlayerId($matchId, (int) $data['player_on_id']);
+
+        if ($offPlayer !== null && $onPlayer !== null) {
+            // Move incoming player to position of outgoing player
+            $this->repo->updatePosition(
+                (int) $onPlayer['id'],
+                (float) $offPlayer['pos_x'],
+                (float) $offPlayer['pos_y'],
+                (string) $offPlayer['position_label']
+            );
+            $this->repo->moveToStartingEleven((int) $onPlayer['id']);
+            $this->repo->moveToBench((int) $offPlayer['id']);
+        }
+
+        return $this->repo->createSubstitution($data);
+    }
+
+    public function undoSubstitution(int $substitutionId): bool
+    {
+        $pdo  = Database::getInstance()->getConnection();
+        $stmt = $pdo->prepare('SELECT * FROM substitution WHERE id = ? LIMIT 1');
+        $stmt->execute([$substitutionId]);
+        $sub = $stmt->fetch();
+        if (!$sub) {
+            return false;
+        }
+
+        $matchId    = (int) $sub['match_id'];
+        $offPlayer  = $this->repo->getMatchPlayerByPlayerId($matchId, (int) $sub['player_off_id']);
+        $onPlayer   = $this->repo->getMatchPlayerByPlayerId($matchId, (int) $sub['player_on_id']);
+
+        if ($offPlayer !== null && $onPlayer !== null) {
+            // Restore outgoing player to the field, send incoming player back to bench
+            $this->repo->updatePosition(
+                (int) $offPlayer['id'],
+                (float) $onPlayer['pos_x'],
+                (float) $onPlayer['pos_y'],
+                (string) $onPlayer['position_label']
+            );
+            $this->repo->moveToStartingEleven((int) $offPlayer['id']);
+            $this->repo->moveToBench((int) $onPlayer['id']);
+        }
+
+        return $this->repo->deleteSubstitution($substitutionId);
+    }
+
+    // -------------------------------------------------------------------------
+    // Live match: time calculations
+    // -------------------------------------------------------------------------
+
+    public function getCurrentMinute(int $matchId): int
+    {
+        $halves = $this->repo->getMatchHalves($matchId);
+        $totalSeconds = 0;
+
+        foreach ($halves as $half) {
+            if ($half['started_at'] === null) {
+                continue;
+            }
+            $start = strtotime($half['started_at']);
+            $end   = $half['stopped_at'] !== null ? strtotime($half['stopped_at']) : time();
+            $totalSeconds += max(0, $end - $start);
+        }
+
+        return (int) floor($totalSeconds / 60) + 1;
+    }
+
+    public function getCurrentHalfNumber(int $matchId): int
+    {
+        $halves = $this->repo->getMatchHalves($matchId);
+        foreach (array_reverse($halves) as $half) {
+            if ($half['started_at'] !== null) {
+                return (int) $half['number'];
+            }
+        }
+        return 1;
+    }
+
+    public function calculatePlayingTime(int $matchId): array
+    {
+        $halves  = $this->repo->getMatchHalves($matchId);
+        $players = $this->repo->getMatchPlayers($matchId);
+        $subs    = $this->repo->getSubstitutions($matchId);
+
+        // Build timeline: half start/stop times in seconds from match start
+        $halfTimelines = [];
+        $cumulativeSeconds = 0;
+        foreach ($halves as $half) {
+            if ($half['started_at'] === null) {
+                continue;
+            }
+            $halfStart    = strtotime($half['started_at']);
+            $halfEnd      = $half['stopped_at'] !== null ? strtotime($half['stopped_at']) : time();
+            $halfDuration = max(0, $halfEnd - $halfStart);
+            $halfTimelines[(int) $half['number']] = [
+                'offset'   => $cumulativeSeconds, // seconds from match start when this half began
+                'start_ts' => $halfStart,
+                'end_ts'   => $halfEnd,
+                'duration' => $halfDuration,
+            ];
+            $cumulativeSeconds += $halfDuration;
+        }
+
+        $totalMatchSeconds = $cumulativeSeconds;
+
+        // Build substitution events: match-second when each sub occurred
+        $subEvents = [];
+        foreach ($subs as $sub) {
+            $halfNum = (int) $sub['half'];
+            $minute  = (int) $sub['minute'];
+            if (!isset($halfTimelines[$halfNum])) {
+                continue;
+            }
+            // Approximate seconds from match start = half offset + (minute - 1) * 60
+            $subSeconds = $halfTimelines[$halfNum]['offset'] + max(0, ($minute - 1) * 60);
+            $subEvents[] = [
+                'second'        => $subSeconds,
+                'player_off_id' => (int) $sub['player_off_id'],
+                'player_on_id'  => (int) $sub['player_on_id'],
+            ];
+        }
+
+        // Calculate playing time per match_player
+        $result = [];
+        foreach ($players as $mp) {
+            $mpId      = (int) $mp['id'];
+            $playerId  = isset($mp['player_id']) ? (int) $mp['player_id'] : null;
+            $isStarter = (bool) $mp['in_starting_eleven'];
+
+            if ($totalMatchSeconds === 0) {
+                $result[$mpId] = 0;
+                continue;
+            }
+
+            if ($isStarter) {
+                $onSecond  = 0;
+                $offSecond = $totalMatchSeconds;
+            } else {
+                // Bench player — check if they came on
+                $onSecond  = null;
+                $offSecond = $totalMatchSeconds;
+                foreach ($subEvents as $sub) {
+                    if ($playerId !== null && $sub['player_on_id'] === $playerId) {
+                        $onSecond = $sub['second'];
+                        break;
+                    }
+                }
+                if ($onSecond === null) {
+                    $result[$mpId] = 0;
+                    continue;
+                }
+            }
+
+            // Check if this player was substituted off
+            foreach ($subEvents as $sub) {
+                if ($playerId !== null && $sub['player_off_id'] === $playerId) {
+                    if ($sub['second'] >= ($onSecond ?? 0)) {
+                        $offSecond = $sub['second'];
+                        break;
+                    }
+                }
+            }
+
+            $result[$mpId] = max(0, $offSecond - ($onSecond ?? 0));
+        }
+
+        return $result;
+    }
+
+    public function closeMatch(int $matchId, int $goalsScored, int $goalsConceded): bool
+    {
+        $match = $this->repo->getMatchById($matchId);
+        if ($match === null || $match['status'] !== 'active') {
+            return false;
+        }
+
+        // Calculate and save playing time for all players
+        $playingTimes = $this->calculatePlayingTime($matchId);
+        foreach ($playingTimes as $matchPlayerId => $seconds) {
+            $this->repo->updatePlayingTime($matchPlayerId, $seconds);
+        }
+
+        $this->repo->setScore($matchId, $goalsScored, $goalsConceded);
+        $this->repo->setStatus($matchId, 'finished');
+        return true;
+    }
+
+    public function getScoreFromEvents(int $matchId): array
+    {
+        $events = $this->repo->getMatchEvents($matchId);
+        $scored    = 0;
+        $conceded  = 0;
+        foreach ($events as $e) {
+            if ($e['event_type'] === 'goal') {
+                if ($e['scored_via'] === 'penalty' && $e['penalty_scored'] == 0) {
+                    continue; // missed penalty
+                }
+                $scored++;
+            } elseif ($e['event_type'] === 'own_goal') {
+                $conceded++;
+            }
+        }
+        return ['scored' => $scored, 'conceded' => $conceded];
+    }
+
+    // -------------------------------------------------------------------------
+    // Private helpers
+    // -------------------------------------------------------------------------
+
     private function normaliseOpponent(string $name): string
     {
         $name = trim($name);

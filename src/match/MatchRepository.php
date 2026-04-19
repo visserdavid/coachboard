@@ -234,4 +234,209 @@ class MatchRepository
         );
         return $stmt->execute([$token, $id]);
     }
+
+    // -------------------------------------------------------------------------
+    // Halves
+    // -------------------------------------------------------------------------
+
+    public function getMatchHalves(int $matchId): array
+    {
+        $stmt = $this->pdo->prepare(
+            'SELECT * FROM match_half WHERE match_id = ? ORDER BY number ASC'
+        );
+        $stmt->execute([$matchId]);
+        return $stmt->fetchAll();
+    }
+
+    public function getHalfByNumber(int $matchId, int $number): ?array
+    {
+        $stmt = $this->pdo->prepare(
+            'SELECT * FROM match_half WHERE match_id = ? AND number = ? LIMIT 1'
+        );
+        $stmt->execute([$matchId, $number]);
+        $result = $stmt->fetch();
+        return $result !== false ? $result : null;
+    }
+
+    public function createHalf(int $matchId, int $number): int
+    {
+        $stmt = $this->pdo->prepare(
+            'INSERT INTO match_half (match_id, number) VALUES (?, ?)'
+        );
+        $stmt->execute([$matchId, $number]);
+        return (int) $this->pdo->lastInsertId();
+    }
+
+    public function startHalf(int $halfId): bool
+    {
+        $stmt = $this->pdo->prepare(
+            'UPDATE match_half SET started_at = NOW(), stopped_at = NULL WHERE id = ?'
+        );
+        return $stmt->execute([$halfId]);
+    }
+
+    public function stopHalf(int $halfId): bool
+    {
+        $stmt = $this->pdo->prepare(
+            'UPDATE match_half SET stopped_at = NOW() WHERE id = ?'
+        );
+        return $stmt->execute([$halfId]);
+    }
+
+    public function resumeHalf(int $halfId): bool
+    {
+        $stmt = $this->pdo->prepare(
+            'UPDATE match_half SET stopped_at = NULL WHERE id = ?'
+        );
+        return $stmt->execute([$halfId]);
+    }
+
+    // -------------------------------------------------------------------------
+    // Events
+    // -------------------------------------------------------------------------
+
+    public function getMatchEvents(int $matchId): array
+    {
+        $stmt = $this->pdo->prepare(
+            'SELECT me.*,
+                    p.first_name  AS player_name,
+                    p.squad_number AS player_number,
+                    ap.first_name AS assist_name
+             FROM match_event me
+             LEFT JOIN player p  ON p.id = me.player_id
+             LEFT JOIN player ap ON ap.id = me.assist_player_id
+             WHERE me.match_id = ?
+             ORDER BY me.half ASC, me.minute ASC, me.id ASC'
+        );
+        $stmt->execute([$matchId]);
+        return $stmt->fetchAll();
+    }
+
+    public function createEvent(array $data): int
+    {
+        $stmt = $this->pdo->prepare(
+            'INSERT INTO match_event
+             (match_id, half, minute, event_type, player_id, assist_player_id,
+              scored_via, penalty_scored, zone, note_text)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+        );
+        $stmt->execute([
+            $data['match_id'],
+            $data['half'],
+            $data['minute'],
+            $data['event_type'],
+            $data['player_id']        ?? null,
+            $data['assist_player_id'] ?? null,
+            $data['scored_via']       ?? null,
+            $data['penalty_scored']   ?? null,
+            $data['zone']             ?? null,
+            $data['note_text']        ?? null,
+        ]);
+        return (int) $this->pdo->lastInsertId();
+    }
+
+    public function deleteEvent(int $id): bool
+    {
+        $stmt = $this->pdo->prepare('DELETE FROM match_event WHERE id = ?');
+        return $stmt->execute([$id]);
+    }
+
+    // -------------------------------------------------------------------------
+    // Substitutions
+    // -------------------------------------------------------------------------
+
+    public function getSubstitutions(int $matchId): array
+    {
+        $stmt = $this->pdo->prepare(
+            'SELECT s.*,
+                    po.first_name AS player_off_name, po.squad_number AS player_off_number,
+                    pi.first_name AS player_on_name,  pi.squad_number AS player_on_number
+             FROM substitution s
+             JOIN player po ON po.id = s.player_off_id
+             JOIN player pi ON pi.id = s.player_on_id
+             WHERE s.match_id = ?
+             ORDER BY s.half ASC, s.minute ASC, s.id ASC'
+        );
+        $stmt->execute([$matchId]);
+        return $stmt->fetchAll();
+    }
+
+    public function createSubstitution(array $data): int
+    {
+        $stmt = $this->pdo->prepare(
+            'INSERT INTO substitution (match_id, half, minute, player_off_id, player_on_id)
+             VALUES (?, ?, ?, ?, ?)'
+        );
+        $stmt->execute([
+            $data['match_id'],
+            $data['half'],
+            $data['minute'],
+            $data['player_off_id'],
+            $data['player_on_id'],
+        ]);
+        return (int) $this->pdo->lastInsertId();
+    }
+
+    public function deleteSubstitution(int $id): bool
+    {
+        $stmt = $this->pdo->prepare('DELETE FROM substitution WHERE id = ?');
+        return $stmt->execute([$id]);
+    }
+
+    // -------------------------------------------------------------------------
+    // Match player state updates
+    // -------------------------------------------------------------------------
+
+    public function updatePlayingTime(int $matchPlayerId, int $seconds): bool
+    {
+        $stmt = $this->pdo->prepare(
+            'UPDATE match_player SET playing_time_seconds = ? WHERE id = ?'
+        );
+        return $stmt->execute([$seconds, $matchPlayerId]);
+    }
+
+    public function updatePosition(int $matchPlayerId, float $posX, float $posY, string $positionLabel): bool
+    {
+        $stmt = $this->pdo->prepare(
+            'UPDATE match_player SET pos_x = ?, pos_y = ?, position_label = ? WHERE id = ?'
+        );
+        return $stmt->execute([$posX, $posY, $positionLabel, $matchPlayerId]);
+    }
+
+    public function moveToStartingEleven(int $matchPlayerId): bool
+    {
+        $stmt = $this->pdo->prepare(
+            'UPDATE match_player SET in_starting_eleven = 1 WHERE id = ?'
+        );
+        return $stmt->execute([$matchPlayerId]);
+    }
+
+    public function moveToBench(int $matchPlayerId): bool
+    {
+        $stmt = $this->pdo->prepare(
+            'UPDATE match_player SET in_starting_eleven = 0, pos_x = NULL, pos_y = NULL, position_label = NULL WHERE id = ?'
+        );
+        return $stmt->execute([$matchPlayerId]);
+    }
+
+    public function getMatchPlayerById(int $matchPlayerId): ?array
+    {
+        $stmt = $this->pdo->prepare(
+            'SELECT mp.*, p.first_name, p.squad_number
+             FROM match_player mp
+             LEFT JOIN player p ON p.id = mp.player_id
+             WHERE mp.id = ? LIMIT 1'
+        );
+        $stmt->execute([$matchPlayerId]);
+        $result = $stmt->fetch();
+        return $result !== false ? $result : null;
+    }
+
+    public function setScore(int $matchId, int $goalsScored, int $goalsConceded): bool
+    {
+        $stmt = $this->pdo->prepare(
+            'UPDATE `match` SET goals_scored = ?, goals_conceded = ? WHERE id = ?'
+        );
+        return $stmt->execute([$goalsScored, $goalsConceded, $matchId]);
+    }
 }
