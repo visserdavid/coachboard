@@ -27,7 +27,7 @@ This document contains the manual acceptance test scenarios for CoachBoard. Run 
 | 4 | Open the email inbox | Magic link email received |
 | 5 | Check email content | One login link, one sentence about expiry (15 minutes) |
 
-**Result:** ✅ pass / ❌ fail — Issue #___ — Remarks: ___
+**Result:** ✅ pass — Issue #1-5 — Remarks: ___
 
 ---
 
@@ -40,7 +40,7 @@ This document contains the manual acceptance test scenarios for CoachBoard. Run 
 | 2 | Check the page | Active season shown, or prompt to create one |
 | 3 | Check the bottom navigation | All five items visible |
 
-**Result:** ✅ pass / ❌ fail — Issue #___ — Remarks: ___
+**Result:** ✅ pass — Issue #6 — Remarks: ___
 
 ---
 
@@ -53,7 +53,7 @@ This document contains the manual acceptance test scenarios for CoachBoard. Run 
 | 2 | Check error message | Clear message that link is invalid or expired |
 | 3 | Check for link back to login | Link to request a new one is present |
 
-**Result:** ✅ pass / ❌ fail — Issue #___ — Remarks: ___
+**Result:** ✅ pass — Issue #___ — Remarks: ___
 
 ---
 
