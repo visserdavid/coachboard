@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 function t(string $key, array $replace = []): string
 {
-    static ?array $strings = null;
+    static $strings = null;
 
     if ($strings === null) {
         $path = dirname(__DIR__, 2) . '/lang/' . APP_LANG . '.json';
