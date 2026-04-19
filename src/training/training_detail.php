@@ -1,6 +1,8 @@
 <?php
 declare(strict_types=1);
 
+$activePage = 'training';
+
 require_once dirname(__DIR__, 2) . '/src/training/TrainingRepository.php';
 require_once dirname(__DIR__, 2) . '/src/training/TrainingService.php';
 require_once dirname(__DIR__, 2) . '/src/player/PlayerRepository.php';

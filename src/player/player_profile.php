@@ -1,6 +1,8 @@
 <?php
 declare(strict_types=1);
 
+$activePage = 'squad';
+
 require_once dirname(__DIR__, 2) . '/src/player/PlayerRepository.php';
 require_once dirname(__DIR__, 2) . '/src/season/SeasonRepository.php';
 require_once dirname(__DIR__, 2) . '/src/stats/StatsRepository.php';

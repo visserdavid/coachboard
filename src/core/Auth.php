@@ -45,8 +45,8 @@ class Auth
 
         $user = self::getCurrentUser();
         if ($user === null || empty($user[$role])) {
-            http_response_code(403);
-            exit(e(t('error.forbidden')));
+            $_SESSION['flash'] = t('auth.access_denied');
+            redirect(APP_URL . '/public/index.php?page=dashboard');
         }
     }
 

@@ -276,9 +276,14 @@
 
   "settings.title": "Settings",
   "settings.squad": "Squad",
+  "settings.squad_desc": "Add and manage players in the current season.",
   "settings.season": "Season",
+  "settings.seasons": "Seasons",
+  "settings.seasons_desc": "Create seasons, configure phases and training days.",
   "settings.staff": "Staff",
+  "settings.staff_desc": "Add staff members and assign roles.",
   "settings.formations": "Formations",
+  "settings.formations_desc": "Manage available formations and set the default.",
 
   "formation.title": "Formations",
   "formation.add": "Add formation",
@@ -420,6 +425,8 @@
   "error.general": "Something went wrong. Please try again.",
   "error.required": "is required.",
   "season.no_seasons": "No seasons yet.",
+  "auth.access_denied": "You do not have permission to access this page.",
+  "match.no_matches": "No matches scheduled yet.",
 
   "week.1": "Monday",
   "week.2": "Tuesday",

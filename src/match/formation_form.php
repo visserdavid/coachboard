@@ -1,6 +1,8 @@
 <?php
 declare(strict_types=1);
 
+$activePage = 'settings';
+
 $formationRepo     = new FormationRepository();
 $formationService  = new FormationService();
 $editId            = isset($_GET['id']) ? (int) $_GET['id'] : null;

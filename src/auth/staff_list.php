@@ -1,6 +1,8 @@
 <?php
 declare(strict_types=1);
 
+$activePage = 'settings';
+
 $staffRepo = new StaffRepository();
 $staff     = $staffRepo->getAllStaff();
 

@@ -1,6 +1,8 @@
 <?php
 declare(strict_types=1);
 
+$activePage = 'settings';
+
 Auth::requireRole('is_administrator');
 
 $activeSeason = getActiveSeason();

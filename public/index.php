@@ -370,34 +370,59 @@ switch ($page) {
         break;
 
     case 'settings':
+        $settingsFlash = $_SESSION['flash'] ?? null;
+        unset($_SESSION['flash']);
         ?>
         <div class="page-header">
             <h1 class="page-title"><?= e(t('settings.title')) ?></h1>
         </div>
+        <?php if ($settingsFlash !== null): ?>
+            <div class="flash-message"><?= e($settingsFlash) ?></div>
+        <?php endif; ?>
         <?php if (!empty($_SESSION['user']['is_administrator']) || !empty($_SESSION['user']['is_assistant'])): ?>
         <a href="<?= e(APP_URL) ?>/public/index.php?page=squad&action=manage"
            class="card card--link">
             <div class="flex-between">
-                <strong><?= e(t('settings.squad')) ?></strong>
+                <div>
+                    <strong><?= e(t('settings.squad')) ?></strong>
+                    <div class="text-sm text-muted"><?= e(t('settings.squad_desc')) ?></div>
+                </div>
                 <span class="text-muted">›</span>
             </div>
         </a>
         <?php endif; ?>
         <?php if (!empty($_SESSION['user']['is_administrator'])): ?>
-        <a href="<?= e(APP_URL) ?>/public/index.php?page=season&action=list"
+        <a href="<?= e(APP_URL) ?>/public/index.php?page=season"
            class="card card--link">
             <div class="flex-between">
-                <strong><?= e(t('settings.season')) ?></strong>
+                <div>
+                    <strong><?= e(t('settings.seasons')) ?></strong>
+                    <div class="text-sm text-muted"><?= e(t('settings.seasons_desc')) ?></div>
+                </div>
+                <span class="text-muted">›</span>
+            </div>
+        </a>
+        <a href="<?= e(APP_URL) ?>/public/index.php?page=staff"
+           class="card card--link">
+            <div class="flex-between">
+                <div>
+                    <strong><?= e(t('settings.staff')) ?></strong>
+                    <div class="text-sm text-muted"><?= e(t('settings.staff_desc')) ?></div>
+                </div>
+                <span class="text-muted">›</span>
+            </div>
+        </a>
+        <a href="<?= e(APP_URL) ?>/public/index.php?page=formation"
+           class="card card--link">
+            <div class="flex-between">
+                <div>
+                    <strong><?= e(t('settings.formations')) ?></strong>
+                    <div class="text-sm text-muted"><?= e(t('settings.formations_desc')) ?></div>
+                </div>
                 <span class="text-muted">›</span>
             </div>
         </a>
         <?php endif; ?>
-        <div class="card">
-            <p class="text-muted"><?= e(t('settings.staff')) ?></p>
-        </div>
-        <div class="card">
-            <p class="text-muted"><?= e(t('settings.formations')) ?></p>
-        </div>
         <?php
         break;
 

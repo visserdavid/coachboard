@@ -1,6 +1,8 @@
 <?php
 declare(strict_types=1);
 
+$activePage = 'settings';
+
 $formationRepo = new FormationRepository();
 $formations    = $formationRepo->getAllFormations();
 

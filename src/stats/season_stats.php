@@ -1,6 +1,8 @@
 <?php
 declare(strict_types=1);
 
+$activePage = 'stats';
+
 require_once dirname(__DIR__, 2) . '/src/stats/StatsRepository.php';
 require_once dirname(__DIR__, 2) . '/src/season/SeasonRepository.php';
 

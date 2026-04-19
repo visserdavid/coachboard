@@ -1,6 +1,8 @@
 <?php
 declare(strict_types=1);
 
+$activePage = 'settings';
+
 require_once dirname(__DIR__, 2) . '/src/season/SeasonRepository.php';
 
 $repo    = new SeasonRepository();
@@ -19,6 +21,8 @@ unset($_SESSION['flash']);
 ob_start();
 ?>
 <div class="page-header">
+    <a href="<?= e(APP_URL) ?>/public/index.php?page=settings"
+       class="btn btn--secondary btn--sm"><?= e(t('action.back')) ?></a>
     <h1 class="page-title"><?= e(t('season.title')) ?></h1>
     <a href="<?= e(APP_URL) ?>/public/index.php?page=season&action=new" class="btn btn--primary btn--sm">
         <?= e(t('season.new')) ?>

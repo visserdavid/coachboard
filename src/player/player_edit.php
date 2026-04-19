@@ -1,6 +1,8 @@
 <?php
 declare(strict_types=1);
 
+$activePage = 'squad';
+
 $id         = (int) ($_GET['id'] ?? 0);
 $playerRepo = new PlayerRepository();
 $playerSvc  = new PlayerService();
