@@ -29,7 +29,7 @@ Update this file at the end of every session.
 - [x] Season and phase management
 - [x] Squad management
 - [x] Training sessions
-- [ ] Match preparation
+- [x] Match preparation
 - [ ] Live match tracking
 - [ ] Parent livestream
 - [ ] Post-match review and ratings
@@ -86,24 +86,31 @@ Update this file at the end of every session.
 
 ## Notes for Next Session
 
-Last completed: Training sessions — all three milestones done and pushed.
+Last completed: Match preparation — all four milestones done and pushed.
 
-What was built (training sessions):
-- `src/training/TrainingRepository.php`: getSessionsByTeam (with phase join), getSessionById, createSession, updateSession, getFocusBySession, setFocus, getAttendanceBySession, getAttendanceByPlayer, saveAttendance (manual upsert), getRecentAttendance, getFocusForSessions (batch), getAttendanceSummariesBySessions (batch)
-- `src/training/TrainingService.php`: cancelSession, reinstateSession, addManualSession, saveSessionContent, saveAttendance, getAttendanceSummary, getRecentAttendanceForLineup
-- `src/training/training_list.php`: chronological timeline with phase dividers (section-divider), focus icons, past attendance summary (present/total), upcoming absence count; JS scroll to anchor session
-- `src/training/training_detail.php`: header with date/phase, cancel/reinstate form, section 1 content (focus checkboxes + notes), section 2 attendance (all active players with status toggle buttons + reason/note sub-fields via JS), section 3 summary (past sessions only)
-- `src/training/training_cancel.php`, `training_reinstate.php`: POST handlers with redirect
-- `public/index.php`: training routing block before ob_start(); require TrainingRepository/TrainingService
-- `public/css/style.css`: training-focus-icon, attendance-row, attendance-buttons, att-btn styles
-- `lang/en.json`: added training.session, training.add_manual, training.content_saved, training.cancel, training.reinstate, training.reinstated, training.attendance_save, training.attendance_saved, training.summary
+What was built (match preparation):
+- `src/match/MatchRepository.php`: getMatchesByTeam (with phase join), getMatchById, createMatch, updateMatch, setStatus, setFormation, deleteMatch, getMatchPlayers, saveMatchPlayer, updateMatchPlayer, removeMatchPlayer, clearMatchPlayers, getPreviousOpponentResult, getRecentMatchesForTemplate, setLivestreamToken
+- `src/match/FormationRepository.php`: getAllFormations, getFormationById, getPositionsByFormation, getDefaultFormation
+- `src/match/MatchService.php`: createMatch (validates + normalises opponent), updateMatch, deleteMatch, setStatus, confirmPreparation (validates 11 starters), generateLivestreamToken, loadLineupFromTemplate, saveLineup, addGuestPlayer, removeGuestPlayer, ensureAllPresentPlayersInRoster
+- `src/match/match_list.php`: timeline with phase dividers, anchor scroll to next upcoming match, score badges with win/draw/loss colouring, previous result against same opponent, status badges (prepared/active)
+- `src/match/match_create.php`: form for creating a match (opponent, date, kick-off, home/away radio, match type radio, half duration), redirects to prepare step 1 on success
+- `src/match/match_prepare.php`: attendance step 1, status toggle buttons (present/absent/injured), guest player add/remove, present count tracking in JS, "Next" button enabled only when ≥11 present
+- `src/match/match_lineup.php`: formation pitch view (green background with CSS), player circles (orange filled / dashed empty), tap to open bottom-sheet modal, assign/clear positions, bench list with attendance dots and injury notes, template selector, formation selector, confirm button (validates 11 starters)
+- `src/match/match_live.php`, `match_review.php`: placeholder stubs
+- `public/index.php`: match routing block added, requires MatchRepository/FormationRepository/MatchService
+- `templates/nav.php`: Matches nav link updated to ?page=match
+- `public/css/style.css`: pitch-wrap, pitch-inner, pitch-position, pitch-circle, pitch-name, bench-player, att-dots/att-dot, player-modal-overlay/player-modal styles
+- `lang/en.json`: match.previous_result, match.result.win/draw/loss, match.created, match.prepare.*, match.guest.*, match.lineup.*
 
 Key decisions:
-- Training routing uses same if/$page pattern as squad/season (before ob_start, files manage own ob/layout)
-- Attendance upsert done manually (SELECT + INSERT/UPDATE) since attendance table has no unique constraint
-- Batch loading (getFocusForSessions, getAttendanceSummariesBySessions) for the list view to avoid N+1 queries
-- getRecentAttendanceForLineup uses two queries: first gets last 5 session IDs, then fetches all attendance for those sessions
-- Attendance past/total in list uses sum of all attendance records (not squad size) — shows 0/0 if no attendance recorded
-- Focus icons use inline SVG; attacking=orange, defending=blue, transitioning=green CSS theme colors
+- Attendance for match stored with context_type='match' using same polymorphic attendance table
+- TrainingRepository::saveAttendance reused for match attendance (context_type param makes it generic)
+- match_lineup.php uses JS in-memory roster array and submits full lineup on each change (no AJAX)
+- Pitch is a CSS aspect-ratio container (padding-top 150%) with absolute-positioned circles at x/y%
+- Formation positions ordered by pos_y ASC for natural top-to-bottom rendering
+- ensureAllPresentPlayersInRoster called on lineup page load to add any present players not yet in roster
+- Guest players excluded from template loading (no player_id to match)
+- nav.php updated: ?page=matches → ?page=match; active class checks 'match' not 'matches'
+- $activePage = 'match' set at top of each match page file
 
-Next: **Match preparation** — match list, preparation flow (attendance + lineup), status transitions.
+Next: **Live match tracking** — prompt 07 (start/stop halves, event registration, substitutions, score).
