@@ -494,3 +494,210 @@ input, select, textarea {
 .att-sub {
     margin-top: 0.4rem;
 }
+
+/* ============================================================
+   Pitch / Lineup composer
+   ============================================================ */
+.pitch-wrap {
+    position: relative;
+    width: 100%;
+    background: #3a8a3a;
+    border-radius: var(--radius-base);
+    overflow: hidden;
+    touch-action: none;
+}
+
+.pitch-wrap::before {
+    content: '';
+    display: block;
+    padding-top: 150%; /* 2:3 aspect ratio */
+}
+
+.pitch-inner {
+    position: absolute;
+    inset: 0;
+}
+
+/* Pitch markings */
+.pitch-inner::before {
+    content: '';
+    position: absolute;
+    inset: 4%;
+    border: 2px solid rgba(255,255,255,0.4);
+    border-radius: 2px;
+}
+
+.pitch-inner::after {
+    content: '';
+    position: absolute;
+    left: 4%;
+    right: 4%;
+    top: 50%;
+    height: 2px;
+    background: rgba(255,255,255,0.4);
+    transform: translateY(-50%);
+}
+
+.pitch-position {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    z-index: 2;
+}
+
+.pitch-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.7rem;
+    color: #fff;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    border: 2px solid rgba(255,255,255,0.6);
+}
+
+.pitch-circle--filled {
+    background: var(--color-accent);
+}
+
+.pitch-circle--empty {
+    background: rgba(255,255,255,0.15);
+    border: 2px dashed rgba(255,255,255,0.6);
+    color: rgba(255,255,255,0.7);
+}
+
+.pitch-name {
+    font-size: 0.65rem;
+    color: #fff;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.6);
+    font-weight: 600;
+    max-width: 50px;
+    text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Bench player list */
+.bench-player {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--color-border);
+    cursor: pointer;
+}
+
+.bench-player:last-child {
+    border-bottom: none;
+}
+
+.bench-player-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.bench-player-name {
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+}
+
+.bench-player-meta {
+    font-size: 0.7rem;
+    color: var(--color-neutral);
+    margin-top: 0.1rem;
+}
+
+/* Attendance dots (last 5 sessions) */
+.att-dots {
+    display: flex;
+    gap: 3px;
+}
+
+.att-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.att-dot--present  { background: var(--color-success); }
+.att-dot--absent   { background: var(--color-danger); }
+.att-dot--injured  { background: var(--color-accent); }
+.att-dot--none     { background: var(--color-border); }
+
+/* Player selector modal */
+.player-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 150;
+    display: flex;
+    align-items: flex-end;
+}
+
+.player-modal {
+    background: var(--color-card-bg);
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    padding: 1.25rem 1rem;
+    width: 100%;
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+.player-modal-title {
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+}
+
+.player-modal-item {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.6rem 0;
+    border-bottom: 1px solid var(--color-border);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.player-modal-item:last-child {
+    border-bottom: none;
+}
+
+.player-modal-item:active {
+    background: var(--color-bg);
+}
+
+/* Progress bar */
+.progress-bar {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    align-items: center;
+}
+
+.progress-bar-step {
+    flex: 1;
+    height: 4px;
+    border-radius: 2px;
+}
+
+.progress-bar-step--done {
+    background: var(--color-success);
+}
+
+.progress-bar-step--active {
+    background: var(--color-primary);
+}
+
+.progress-bar-step--pending {
+    background: var(--color-border);
+}
