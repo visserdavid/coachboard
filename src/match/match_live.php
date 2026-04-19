@@ -247,8 +247,9 @@ if ($isHome) {
     $rightLabel = $teamName;
 }
 
-$dateLabel = date('j M', strtotime($match['date']));
-$flash     = $_SESSION['flash'] ?? null;
+$dateLabel     = date('j M', strtotime($match['date']));
+$livestreamUrl = $matchService->getLivestreamUrl($matchId);
+$flash         = $_SESSION['flash'] ?? null;
 unset($_SESSION['flash']);
 
 ob_start();
@@ -276,6 +277,16 @@ ob_start();
         <?php endif; ?>
         <?php if (in_array($halfState, ['h1_running', 'h2_running'], true)): ?>
             <div class="live-score-minute"><?= $minute ?><?= e(t('live.minute')) ?></div>
+        <?php endif; ?>
+        <?php if (!empty($livestreamUrl)): ?>
+            <button type="button"
+                    onclick="copyLiveUrl(<?= e(json_encode($livestreamUrl)) ?>)"
+                    id="live-share-btn"
+                    style="margin-top:0.35rem; font-size:0.7rem; padding:0.2rem 0.6rem;
+                           background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.4);
+                           border-radius:var(--radius-sm); color:#fff; cursor:pointer;">
+                <?= e(t('livestream.copy')) ?>
+            </button>
         <?php endif; ?>
     </div>
     <div class="live-score-team live-score-team--right"><?= e($rightLabel) ?></div>
@@ -1072,6 +1083,24 @@ function submitCloseMatch(halfNum) {
     });
     document.body.appendChild(form);
     form.submit();
+}
+
+function copyLiveUrl(url) {
+    var btn = document.getElementById('live-share-btn');
+    var original = btn ? btn.textContent : '';
+    var copied = <?= json_encode(t('livestream.copied')) ?>;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(function() {
+            if (btn) { btn.textContent = copied; setTimeout(function() { btn.textContent = original; }, 2000); }
+        });
+    } else {
+        var ta = document.createElement('textarea');
+        ta.value = url; ta.style.position = 'fixed'; ta.style.opacity = '0';
+        document.body.appendChild(ta); ta.focus(); ta.select();
+        try { document.execCommand('copy'); } catch(e) {}
+        document.body.removeChild(ta);
+        if (btn) { btn.textContent = copied; setTimeout(function() { btn.textContent = original; }, 2000); }
+    }
 }
 </script>
 

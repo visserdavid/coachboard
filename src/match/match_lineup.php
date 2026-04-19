@@ -153,8 +153,9 @@ $rosterPlayerIds = array_map(fn($mp) => (int) $mp['player_id'], array_filter($ma
 
 $starterCount = count($starters);
 
-$dateLabel = date('j M', strtotime($match['date']));
-$flash     = $_SESSION['flash'] ?? null;
+$dateLabel     = date('j M', strtotime($match['date']));
+$livestreamUrl = $matchService->getLivestreamUrl($id);
+$flash         = $_SESSION['flash'] ?? null;
 unset($_SESSION['flash']);
 
 ob_start();
@@ -343,6 +344,19 @@ ob_start();
     </form>
 </div>
 
+<!-- Livestream link -->
+<?php if (!empty($livestreamUrl)): ?>
+<div class="card" style="margin-bottom:0.75rem;">
+    <div class="text-sm text-muted mb-1" style="font-weight:600;"><?= e(t('livestream.link')) ?></div>
+    <div class="text-sm mb-2" style="word-break:break-all; color:var(--color-primary);"><?= e($livestreamUrl) ?></div>
+    <p class="text-sm text-muted mb-2"><?= e(t('livestream.share_note')) ?></p>
+    <button type="button" class="btn btn--secondary btn--sm" id="copy-link-btn"
+            onclick="copyLivestreamLink(<?= e(json_encode($livestreamUrl)) ?>)">
+        <?= e(t('livestream.copy')) ?>
+    </button>
+</div>
+<?php endif; ?>
+
 <!-- Player position modal (bottom sheet) -->
 <div id="pos-modal" class="player-modal-overlay" style="display:none;" onclick="closeModal(event)">
     <div class="player-modal">
@@ -528,6 +542,29 @@ function escHtml(str) {
     var d = document.createElement('div');
     d.appendChild(document.createTextNode(str || ''));
     return d.innerHTML;
+}
+
+function copyLivestreamLink(url) {
+    var btn = document.getElementById('copy-link-btn');
+    var original = btn.textContent;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(function() {
+            btn.textContent = <?= json_encode(t('livestream.copied')) ?>;
+            setTimeout(function() { btn.textContent = original; }, 2000);
+        });
+    } else {
+        var ta = document.createElement('textarea');
+        ta.value = url;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.focus();
+        ta.select();
+        try { document.execCommand('copy'); } catch(e) {}
+        document.body.removeChild(ta);
+        btn.textContent = <?= json_encode(t('livestream.copied')) ?>;
+        setTimeout(function() { btn.textContent = original; }, 2000);
+    }
 }
 </script>
 <?php

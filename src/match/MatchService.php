@@ -64,6 +64,15 @@ class MatchService
         return $token;
     }
 
+    public function getLivestreamUrl(int $matchId): string
+    {
+        $match = $this->repo->getMatchById($matchId);
+        if ($match === null || empty($match['livestream_token'])) {
+            return '';
+        }
+        return APP_URL . '/public/live.php?token=' . $match['livestream_token'];
+    }
+
     public function loadLineupFromTemplate(int $matchId, int $templateMatchId): bool
     {
         $match          = $this->repo->getMatchById($matchId);
