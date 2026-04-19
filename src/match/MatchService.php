@@ -70,7 +70,7 @@ class MatchService
         if ($match === null || empty($match['livestream_token'])) {
             return '';
         }
-        return APP_URL . '/public/live.php?token=' . $match['livestream_token'];
+        return APP_URL . '/live.php?token=' . $match['livestream_token'];
     }
 
     public function loadLineupFromTemplate(int $matchId, int $templateMatchId): bool

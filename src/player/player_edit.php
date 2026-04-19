@@ -164,7 +164,7 @@ ob_start();
         <div class="form-group">
             <label class="form-label"><?= e(t('player.photo_upload')) ?></label>
             <?php if (!empty($player['photo_path'])): ?>
-                <img src="<?= e(APP_URL . '/public/' . $player['photo_path']) ?>"
+                <img src="<?= e(APP_URL . '/' . $player['photo_path']) ?>"
                      alt="" style="width:64px;height:64px;border-radius:50%;object-fit:cover;display:block;margin-bottom:0.5rem;">
             <?php endif; ?>
             <input type="file" name="photo" accept="image/jpeg" class="form-input"

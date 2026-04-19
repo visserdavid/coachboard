@@ -76,7 +76,7 @@ ob_start();
 <!-- Header -->
 <div class="card" style="text-align:center; padding:1.5rem 1rem;">
     <?php if (!empty($player['photo_path'])): ?>
-        <img src="<?= e(APP_URL . '/public/' . $player['photo_path']) ?>"
+        <img src="<?= e(APP_URL . '/' . $player['photo_path']) ?>"
              alt="<?= e($player['first_name']) ?>"
              style="width:96px;height:96px;border-radius:50%;object-fit:cover;margin:0 auto 0.75rem;">
     <?php else: ?>

@@ -63,7 +63,7 @@ ob_start();
            class="card card--link">
             <div class="flex" style="align-items:center; gap:0.75rem;">
                 <?php if (!empty($player['photo_path'])): ?>
-                    <img src="<?= e(APP_URL . '/public/' . $player['photo_path']) ?>"
+                    <img src="<?= e(APP_URL . '/' . $player['photo_path']) ?>"
                          alt="<?= e($player['first_name']) ?>"
                          style="width:48px;height:48px;border-radius:50%;object-fit:cover;flex-shrink:0;">
                 <?php else: ?>

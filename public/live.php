@@ -272,7 +272,7 @@ function playerDisplayName(array $p): string
                     <div class="pitch-circle pitch-circle--filled"
                          style="overflow:hidden;">
                         <?php if ($hasPhoto): ?>
-                            <img src="<?= e(APP_URL . '/public/' . $p['photo_path']) ?>"
+                            <img src="<?= e(APP_URL . '/' . $p['photo_path']) ?>"
                                  alt="<?= e($name) ?>"
                                  style="width:100%;height:100%;object-fit:cover;">
                         <?php else: ?>
