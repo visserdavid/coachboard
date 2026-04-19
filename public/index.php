@@ -18,6 +18,7 @@ require_once dirname(__DIR__) . '/src/match/MatchRepository.php';
 require_once dirname(__DIR__) . '/src/match/FormationRepository.php';
 require_once dirname(__DIR__) . '/src/match/MatchService.php';
 require_once dirname(__DIR__) . '/src/stats/StatsRepository.php';
+require_once dirname(__DIR__) . '/src/auth/StaffRepository.php';
 
 // PHPMailer autoloader (when installed via Composer)
 $autoload = dirname(__DIR__) . '/vendor/autoload.php';
@@ -149,6 +150,29 @@ if ($page === 'training') {
 if ($page === 'stats') {
     Auth::requireLogin();
     require dirname(__DIR__) . '/src/stats/season_stats.php';
+    exit;
+}
+
+// Staff pages — administrator only
+if ($page === 'staff') {
+    Auth::requireRole('is_administrator');
+    switch ($action) {
+        case 'create':
+            require dirname(__DIR__) . '/src/auth/staff_form.php';
+            break;
+        case 'edit':
+            require dirname(__DIR__) . '/src/auth/staff_form.php';
+            break;
+        case 'deactivate':
+            require dirname(__DIR__) . '/src/auth/staff_deactivate.php';
+            break;
+        case 'reactivate':
+            require dirname(__DIR__) . '/src/auth/staff_reactivate.php';
+            break;
+        default:
+            require dirname(__DIR__) . '/src/auth/staff_list.php';
+            break;
+    }
     exit;
 }
 
