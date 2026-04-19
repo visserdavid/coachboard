@@ -19,14 +19,17 @@ CoachBoard takes a deliberate opposite approach. Every feature earns its place b
 ## Features
 
 - **Squad management** — player profiles with skill ratings, photo and attendance history
-- **Match preparation** — visual lineup builder with formation templates and substitution planning
+- **Match preparation** — lineup builder with position assignments and substitution planning
 - **Live match tracking** — real-time event registration: goals, cards, substitutions and notes
+- **Match review** — post-match player ratings and match summary
 - **Parent livestream** — secure public page that updates every 60 seconds, no login required
-- **Training sessions** — automatic schedule generation, attendance registration and session notes
-- **Statistics** — playing time balance, goals, assists and attendance per player and season
+- **Training sessions** — attendance registration, session notes and training focus per phase
+- **Statistics** — playing time balance, goals, cards and attendance per player and season
 - **Season phases** — divide a season into three phases with individual focus goals
+- **Formation management** — create and manage custom formations with saved player positions
+- **Staff management** — invite staff members and assign roles per season
 - **Magic link login** — no passwords; staff log in via a one-time link sent to their email
-- **Role-based access** — administrator, trainer, coach and assistant roles with configurable permissions
+- **Role-based access** — administrator, trainer, coach and assistant roles
 - **Localisation** — all visible text stored in a single language file (`lang/en.json`)
 
 ---
@@ -58,7 +61,7 @@ CoachBoard runs on standard shared hosting. No special server configuration requ
 
 1. Clone the repository:
    ```
-   git clone https://github.com/yourusername/coachboard.git
+   git clone https://github.com/visserdavid/coachboard.git
    ```
 
 2. Copy the example configuration file and fill in your database and mail credentials:
