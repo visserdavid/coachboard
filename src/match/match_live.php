@@ -706,6 +706,8 @@ var formationPositions = <?= json_encode(array_map(fn($p) => [
     'posY'  => (float) $p['pos_y'],
 ], $positions)) ?>;
 
+var currentMinute = <?= $minute ?>;
+
 var labels = {
     makeSub:      <?= json_encode(t('live.sub.title')) ?>,
     changePos:    <?= json_encode(t('live.position.change')) ?>,
@@ -832,7 +834,7 @@ function confirmDeleteEvent(eventId, msg) {
 
 // ── Event registration FAB ────────────────────────────────────────────────────
 function openEventSheet() {
-    document.getElementById('event-sheet-title').textContent = labels.goal + ' / ' + labels.ownGoal + ' / ' + labels.card + ' / ' + labels.note;
+    document.getElementById('event-sheet-title').textContent = currentMinute + <?= json_encode(t('live.minute')) ?> + ' — ' + labels.goal + ' / ' + labels.ownGoal + ' / ' + labels.card + ' / ' + labels.note;
     var html = '<div class="player-modal-item" onclick="startGoalFlow(false)">' + labels.goal + '</div>'
              + '<div class="player-modal-item" onclick="startGoalFlow(true)">'  + labels.ownGoal + '</div>'
              + '<div class="player-modal-item" onclick="startCardFlow()">'      + labels.card + '</div>'
@@ -851,7 +853,7 @@ function startGoalFlow(isOwnGoal) {
     if (isOwnGoal) {
         showZonePicker(function(zone) {
             goalState.zone = zone;
-            submitGoal();
+            showGoalConfirm();
         });
         return;
     }
@@ -902,7 +904,7 @@ function setVia(via) {
     } else {
         showZonePicker(function(zone) {
             goalState.zone = zone;
-            submitGoal();
+            showGoalConfirm();
         });
     }
 }
@@ -918,10 +920,10 @@ function setPenaltyResult(scored) {
     if (scored) {
         showZonePicker(function(zone) {
             goalState.zone = zone;
-            submitGoal();
+            showGoalConfirm();
         });
     } else {
-        submitGoal();
+        showGoalConfirm();
     }
 }
 
@@ -938,6 +940,34 @@ function showZonePicker(callback) {
     });
     html += '</div>';
     window._zoneCallback = callback;
+    document.getElementById('event-sheet-content').innerHTML = html;
+}
+
+function showGoalConfirm() {
+    var scorerName = labels.unknown;
+    if (goalState.scorerId) {
+        var sp = starters.find(function(p) { return p.playerId === goalState.scorerId; });
+        if (sp) { scorerName = sp.name; }
+    }
+    var summary = currentMinute + <?= json_encode(t('live.minute')) ?>;
+    if (goalState.isOwnGoal) {
+        summary += ' — ' + labels.ownGoal;
+    } else {
+        summary += ' — ' + labels.goal + ': ' + scorerName;
+        if (goalState.assistId) {
+            var ap = starters.find(function(p) { return p.playerId === goalState.assistId; });
+            if (ap) { summary += ' (' + ap.name + ')'; }
+        }
+        if (goalState.via !== 'open_play') {
+            summary += ' · ' + (goalState.via === 'free_kick' ? labels.freeKick : labels.penalty);
+        }
+    }
+    if (goalState.zone) { summary += ' · ' + labels.zoneLabels[goalState.zone]; }
+
+    var html = '<div style="padding:1rem;">'
+             + '<p style="margin-bottom:1rem;font-weight:500;">' + summary + '</p>'
+             + '<button type="button" class="btn btn--primary btn--full" onclick="submitGoal()">' + labels.confirmBtn + '</button>'
+             + '</div>';
     document.getElementById('event-sheet-content').innerHTML = html;
 }
 
