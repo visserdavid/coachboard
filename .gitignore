@@ -10,6 +10,7 @@ public/uploads/
 # Logs
 logs/
 *.log
+storage/
 
 # Editor and OS files
 .vscode/
