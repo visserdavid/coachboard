@@ -3,10 +3,12 @@ declare(strict_types=1);
 
 require_once dirname(__DIR__, 2) . '/src/player/PlayerRepository.php';
 require_once dirname(__DIR__, 2) . '/src/season/SeasonRepository.php';
+require_once dirname(__DIR__, 2) . '/src/stats/StatsRepository.php';
 
 $id         = (int) ($_GET['id'] ?? 0);
 $playerRepo = new PlayerRepository();
 $seasonRepo = new SeasonRepository();
+$statsRepo  = new StatsRepository();
 
 $player = $playerRepo->getPlayerById($id);
 if ($player === null) {
@@ -15,21 +17,39 @@ if ($player === null) {
 }
 
 // Determine the season for this player via their team
-$team = null;
 $stmt = Database::getInstance()->getConnection()->prepare(
     'SELECT * FROM team WHERE id = ? LIMIT 1'
 );
 $stmt->execute([$player['team_id']]);
 $team = $stmt->fetch() ?: null;
 
+$teamId   = $team ? (int) $team['id'] : 0;
 $seasonId = $team ? (int) $team['season_id'] : 0;
 
-$skills      = $playerRepo->getSkillsByPlayer($id, $seasonId);
-$avgRatings  = $playerRepo->getAverageRatingsByPlayer($id, $seasonId);
-$stats       = $playerRepo->getPlayerSeasonStats($id, $seasonId);
+// Phase filter
+$phases        = $seasonRepo->getPhasesBySeason($seasonId);
+$activePhaseId = isset($_GET['phase_id']) ? (int) $_GET['phase_id'] : null;
+$activePhase   = null;
+if ($activePhaseId !== null) {
+    foreach ($phases as $ph) {
+        if ((int) $ph['id'] === $activePhaseId) {
+            $activePhase = $ph;
+            break;
+        }
+    }
+    if ($activePhase === null) {
+        $activePhaseId = null;
+    }
+}
 
-$user       = Auth::getCurrentUser();
-$canEdit    = $user && (!empty($user['is_administrator']) || !empty($user['is_assistant']));
+$skills     = $playerRepo->getSkillsByPlayer($id, $seasonId);
+$avgRatings = $playerRepo->getAverageRatingsByPlayer($id, $seasonId);
+$stats      = $activePhaseId !== null
+    ? $statsRepo->getPlayerStatsByPhase($id, $teamId, $activePhaseId)
+    : $statsRepo->getPlayerStats($id, $teamId, $seasonId);
+
+$user    = Auth::getCurrentUser();
+$canEdit = $user && (!empty($user['is_administrator']) || !empty($user['is_assistant']));
 
 $skillKeys  = ['pace', 'shooting', 'passing', 'dribbling', 'defending', 'physicality'];
 $hasSkills  = $skills !== null && array_filter(
@@ -101,13 +121,33 @@ ob_start();
 
 <!-- Season statistics -->
 <div class="card">
-    <h3 style="font-size:var(--font-size-sm);font-weight:600;color:var(--color-neutral);margin-bottom:0.75rem;">
-        <?= e(t('dashboard.season_stats')) ?>
-    </h3>
+    <div class="flex-between mb-1">
+        <h3 style="font-size:var(--font-size-sm);font-weight:600;color:var(--color-neutral);margin:0;">
+            <?= e(t('dashboard.season_stats')) ?>
+        </h3>
+    </div>
+
+    <?php if (seasonHasPhases() && !empty($phases)): ?>
+    <div style="display:flex;gap:0.4rem;flex-wrap:wrap;margin-bottom:0.75rem;">
+        <a href="?page=squad&action=profile&id=<?= $id ?>"
+           class="badge <?= $activePhaseId === null ? 'badge--primary' : 'badge--neutral' ?>"
+           style="text-decoration:none;">
+            <?= e(t('stats.filter.full_season')) ?>
+        </a>
+        <?php foreach ($phases as $ph): ?>
+            <a href="?page=squad&action=profile&id=<?= $id ?>&phase_id=<?= (int) $ph['id'] ?>"
+               class="badge <?= $activePhaseId === (int) $ph['id'] ? 'badge--primary' : 'badge--neutral' ?>"
+               style="text-decoration:none;">
+                <?= e($ph['label'] ?: t('stats.filter.phase', ['number' => $ph['number']])) ?>
+            </a>
+        <?php endforeach; ?>
+    </div>
+    <?php endif; ?>
+
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;">
         <div>
             <div style="font-size:1.25rem;font-weight:800;color:var(--color-primary);">
-                <?= $stats['playing_time_minutes'] ?>
+                <?= $stats['playing_time_minutes'] ?> <span style="font-size:0.75rem;font-weight:400;"><?= e(t('stats.minutes')) ?></span>
             </div>
             <div class="text-sm text-muted"><?= e(t('player.stats.playing_time')) ?></div>
         </div>
@@ -130,20 +170,29 @@ ob_start();
             <div class="text-sm text-muted"><?= e(t('player.stats.assists')) ?></div>
         </div>
     </div>
-    <?php if ($stats['training_total'] > 0): ?>
+    <?php if ($stats['training_attendance_pct'] > 0 || true): ?>
         <div style="margin-top:0.75rem; padding-top:0.75rem; border-top:1px solid var(--color-border);">
             <div class="flex-between">
                 <span class="text-sm text-muted"><?= e(t('player.stats.attendance')) ?></span>
-                <strong>
-                    <?= $stats['training_present'] ?>/<?= $stats['training_total'] ?>
-                    (<?= round($stats['training_present'] / $stats['training_total'] * 100) ?>%)
-                </strong>
+                <strong><?= $stats['training_attendance_pct'] ?>%</strong>
+            </div>
+        </div>
+    <?php endif; ?>
+    <?php if ($stats['average_rating'] !== null): ?>
+        <div style="margin-top:0.5rem; padding-top:0.5rem; border-top:1px solid var(--color-border);">
+            <div class="flex-between">
+                <span class="text-sm text-muted"><?= e(t('player.average_rating')) ?></span>
+                <span style="color:var(--color-accent);">
+                    <?php for ($s = 1; $s <= 5; $s++): ?>
+                        <?= $s <= $stats['average_rating'] ? '★' : '☆' ?>
+                    <?php endfor; ?>
+                </span>
             </div>
         </div>
     <?php endif; ?>
 </div>
 
-<!-- Average match rating -->
+<!-- Average match rating (per skill) -->
 <?php if ($avgRatings !== null): ?>
 <div class="card">
     <h3 style="font-size:var(--font-size-sm);font-weight:600;color:var(--color-neutral);margin-bottom:0.75rem;">

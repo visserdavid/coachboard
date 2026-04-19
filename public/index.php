@@ -17,6 +17,7 @@ require_once dirname(__DIR__) . '/src/training/TrainingService.php';
 require_once dirname(__DIR__) . '/src/match/MatchRepository.php';
 require_once dirname(__DIR__) . '/src/match/FormationRepository.php';
 require_once dirname(__DIR__) . '/src/match/MatchService.php';
+require_once dirname(__DIR__) . '/src/stats/StatsRepository.php';
 
 // PHPMailer autoloader (when installed via Composer)
 $autoload = dirname(__DIR__) . '/vendor/autoload.php';
@@ -144,6 +145,13 @@ if ($page === 'training') {
     exit;
 }
 
+// Stats pages manage their own output and layout
+if ($page === 'stats') {
+    Auth::requireLogin();
+    require dirname(__DIR__) . '/src/stats/season_stats.php';
+    exit;
+}
+
 // Season pages manage their own output and layout (like auth pages)
 if ($page === 'season') {
     Auth::requireRole('is_administrator');
@@ -175,6 +183,43 @@ switch ($page) {
     case 'dashboard':
         $activeSeason = getActiveSeason();
         $currentPhase = getCurrentPhase();
+
+        // Load real dashboard data when there is an active season
+        $dashTeam    = null;
+        $dashSummary = null;
+        $dashRecent  = [];
+        $dashNext    = null;
+        if ($activeSeason !== null) {
+            $pdo = Database::getInstance()->getConnection();
+            $s   = $pdo->prepare('SELECT * FROM team WHERE season_id = ? LIMIT 1');
+            $s->execute([(int) $activeSeason['id']]);
+            $dashTeam = $s->fetch() ?: null;
+
+            if ($dashTeam !== null) {
+                $dashTeamId = (int) $dashTeam['id'];
+                $statsRepo  = new StatsRepository();
+                $dashSummary = $statsRepo->getSeasonSummary($dashTeamId, (int) $activeSeason['id']);
+
+                // Last 3 finished matches
+                $s = $pdo->prepare(
+                    'SELECT * FROM `match`
+                     WHERE team_id = ? AND status = \'finished\' AND deleted_at IS NULL
+                     ORDER BY date DESC, kick_off_time DESC LIMIT 3'
+                );
+                $s->execute([$dashTeamId]);
+                $dashRecent = $s->fetchAll();
+
+                // Next planned/prepared match
+                $s = $pdo->prepare(
+                    'SELECT * FROM `match`
+                     WHERE team_id = ? AND status IN (\'planned\',\'prepared\') AND deleted_at IS NULL
+                       AND date >= CURDATE()
+                     ORDER BY date ASC, kick_off_time ASC LIMIT 1'
+                );
+                $s->execute([$dashTeamId]);
+                $dashNext = $s->fetch() ?: null;
+            }
+        }
         ?>
         <div class="page-header">
             <h1 class="page-title"><?= e(t('dashboard.title')) ?></h1>
@@ -198,18 +243,77 @@ switch ($page) {
                 <?php endif; ?>
             </div>
         <?php endif; ?>
+
+        <!-- Upcoming match -->
         <div class="card">
             <p class="text-muted text-sm mb-1"><?= e(t('dashboard.upcoming_match')) ?></p>
-            <p><?= e(t('dashboard.no_upcoming_match')) ?></p>
+            <?php if ($dashNext !== null): ?>
+                <a href="<?= e(APP_URL) ?>/public/index.php?page=match&action=<?= $dashNext['status'] === 'active' ? 'live' : 'prepare' ?>&id=<?= (int) $dashNext['id'] ?>"
+                   style="text-decoration:none;color:inherit;">
+                    <strong><?= e($dashNext['opponent']) ?></strong>
+                    <span class="text-sm text-muted" style="margin-left:0.5rem;">
+                        <?= e(date('d M', strtotime($dashNext['date']))) ?>
+                        <?php if ($dashNext['kick_off_time']): ?>
+                            <?= e(substr($dashNext['kick_off_time'], 0, 5)) ?>
+                        <?php endif; ?>
+                    </span>
+                </a>
+            <?php else: ?>
+                <p class="text-muted"><?= e(t('dashboard.no_upcoming_match')) ?></p>
+            <?php endif; ?>
         </div>
+
+        <!-- Last results -->
         <div class="card">
             <p class="text-muted text-sm mb-1"><?= e(t('dashboard.last_results')) ?></p>
-            <p><?= e(t('dashboard.no_results')) ?></p>
+            <?php if (!empty($dashRecent)): ?>
+                <?php foreach ($dashRecent as $rm): ?>
+                    <?php
+                        $gs = (int) $rm['goals_scored'];
+                        $gc = (int) $rm['goals_conceded'];
+                        if ($gs > $gc)      { $resultClass = 'badge--success'; $resultKey = 'match.result.win'; }
+                        elseif ($gs === $gc) { $resultClass = 'badge--neutral'; $resultKey = 'match.result.draw'; }
+                        else                 { $resultClass = 'badge--danger';  $resultKey = 'match.result.loss'; }
+                    ?>
+                    <div class="flex-between" style="margin-bottom:0.4rem;">
+                        <span class="text-sm"><?= e($rm['opponent']) ?></span>
+                        <span>
+                            <span class="badge <?= $resultClass ?>"><?= e(t($resultKey)) ?></span>
+                            <span class="text-sm text-muted" style="margin-left:0.25rem;"><?= $gs ?>–<?= $gc ?></span>
+                        </span>
+                    </div>
+                <?php endforeach; ?>
+            <?php else: ?>
+                <p class="text-muted"><?= e(t('dashboard.no_results')) ?></p>
+            <?php endif; ?>
         </div>
+
+        <!-- Season stats summary -->
+        <?php if ($dashSummary !== null): ?>
         <div class="card">
             <p class="text-muted text-sm mb-1"><?= e(t('dashboard.season_stats')) ?></p>
-            <p><?= e(t('dashboard.no_top_scorer')) ?></p>
+            <?php if ($dashSummary['matches_played'] > 0): ?>
+                <div style="display:flex;gap:1rem;margin-bottom:0.5rem;">
+                    <span style="color:var(--color-success);font-weight:700;"><?= $dashSummary['wins'] ?>W</span>
+                    <span style="color:var(--color-neutral);font-weight:700;"><?= $dashSummary['draws'] ?>D</span>
+                    <span style="color:var(--color-danger);font-weight:700;"><?= $dashSummary['losses'] ?>L</span>
+                </div>
+                <?php if ($dashSummary['top_scorer'] !== null): ?>
+                    <p class="text-sm text-muted">
+                        <?= e(t('dashboard.top_scorer')) ?>:
+                        <strong><?= e($dashSummary['top_scorer']['name']) ?></strong>
+                        (<?= (int) $dashSummary['top_scorer']['goals'] ?>)
+                    </p>
+                <?php endif; ?>
+            <?php else: ?>
+                <p class="text-muted"><?= e(t('dashboard.no_top_scorer')) ?></p>
+            <?php endif; ?>
+            <a href="<?= e(APP_URL) ?>/public/index.php?page=stats"
+               class="text-sm" style="color:var(--color-primary);text-decoration:none;display:block;margin-top:0.5rem;">
+                <?= e(t('stats.title')) ?> →
+            </a>
         </div>
+        <?php endif; ?>
         <?php
         break;
 
