@@ -13,11 +13,24 @@ if ($match === null || $match['status'] !== 'finished') {
     redirect(APP_URL . '/index.php?page=match');
 }
 
-$playerIds = array_map('intval', (array) ($_POST['player_ids'] ?? []));
+$pdo = Database::getInstance()->getConnection();
+$allowedStmt = $pdo->prepare(
+    "SELECT DISTINCT a.player_id
+     FROM attendance a
+     JOIN player p ON p.id = a.player_id
+     WHERE a.context_type = 'match'
+       AND a.context_id = ?
+       AND a.status = 'present'
+       AND p.deleted_at IS NULL"
+);
+$allowedStmt->execute([$matchId]);
+$allowedPlayerIds = array_flip(array_map('intval', array_column($allowedStmt->fetchAll(), 'player_id')));
+
+$playerIds = array_unique(array_map('intval', (array) ($_POST['player_ids'] ?? [])));
 $skillKeys = ['pace', 'shooting', 'passing', 'dribbling', 'defending', 'physicality'];
 
 foreach ($playerIds as $playerId) {
-    if ($playerId <= 0) {
+    if ($playerId <= 0 || !isset($allowedPlayerIds[$playerId])) {
         continue;
     }
     $skills = [];
