@@ -59,9 +59,20 @@ class TrainingService
 
     public function saveAttendance(int $sessionId, array $attendance): bool
     {
+        $session = $this->repo->getSessionById($sessionId);
+        if ($session === null) {
+            return false;
+        }
+
+        $allowedPlayerIds = $this->getActivePlayerIdsByTeam((int) $session['team_id']);
         foreach ($attendance as $playerId => $data) {
+            $playerId = (int) $playerId;
+            if (!isset($allowedPlayerIds[$playerId])) {
+                continue;
+            }
+
             $this->repo->saveAttendance(
-                (int) $playerId,
+                $playerId,
                 'training_session',
                 $sessionId,
                 $data
@@ -113,5 +124,15 @@ class TrainingService
             $result[(int) $row['player_id']][] = $row['status'];
         }
         return $result;
+    }
+
+    private function getActivePlayerIdsByTeam(int $teamId): array
+    {
+        $stmt = $this->pdo->prepare(
+            'SELECT id FROM player WHERE team_id = ? AND deleted_at IS NULL'
+        );
+        $stmt->execute([$teamId]);
+
+        return array_fill_keys(array_map('intval', array_column($stmt->fetchAll(), 'id')), true);
     }
 }
