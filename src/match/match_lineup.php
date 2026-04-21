@@ -24,32 +24,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $postAction = $_POST['_action'] ?? '';
 
     if ($postAction === 'save_lineup') {
-        // Receive array of positions: player_id, match_player_id (existing), position_label, pos_x, pos_y, in_starting_eleven
-        // We build the full lineup from POST and persist it
         $rawPositions = (array) ($_POST['positions'] ?? []);
-
-        // Get current match players to know which guests exist
-        $currentPlayers = $matchRepo->getMatchPlayers($id);
-        $guestPlayers   = array_filter($currentPlayers, fn($p) => (bool) $p['is_guest']);
-
-        // Clear non-guest match players, then re-add
-        $pdo = Database::getInstance()->getConnection();
-        $pdo->prepare('DELETE FROM match_player WHERE match_id = ? AND is_guest = 0')->execute([$id]);
-
-        foreach ($rawPositions as $pos) {
-            $playerId = isset($pos['player_id']) && $pos['player_id'] !== '' ? (int) $pos['player_id'] : null;
-            if ($playerId === null) {
-                continue;
-            }
-            $matchRepo->saveMatchPlayer($id, [
-                'player_id'          => $playerId,
-                'is_guest'           => 0,
-                'in_starting_eleven' => (int) ($pos['in_starting_eleven'] ?? 0),
-                'position_label'     => $pos['position_label'] ?? null,
-                'pos_x'              => isset($pos['pos_x']) && $pos['pos_x'] !== '' ? (float) $pos['pos_x'] : null,
-                'pos_y'              => isset($pos['pos_y']) && $pos['pos_y'] !== '' ? (float) $pos['pos_y'] : null,
-            ]);
-        }
+        $matchService->saveLineup($id, $rawPositions);
 
         redirect(APP_URL . '/index.php?page=match&action=lineup&id=' . $id);
     }

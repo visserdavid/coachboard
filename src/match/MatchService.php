@@ -49,11 +49,36 @@ class MatchService
 
     public function confirmPreparation(int $matchId): bool
     {
-        $players = $this->repo->getMatchPlayers($matchId);
-        $starters = array_filter($players, fn($p) => (bool) $p['in_starting_eleven']);
-        if (count($starters) < 11) {
+        $match = $this->repo->getMatchById($matchId);
+        if ($match === null) {
             return false;
         }
+
+        $allowedPlayerIds = array_flip($this->getPresentPlayerIds($matchId, (int) $match['team_id']));
+        $players = $this->repo->getMatchPlayers($matchId);
+        $starters = [];
+        $seenPlayerIds = [];
+
+        foreach ($players as $player) {
+            if ((bool) $player['is_guest']) {
+                continue;
+            }
+
+            $playerId = (int) ($player['player_id'] ?? 0);
+            if ($playerId <= 0 || !isset($allowedPlayerIds[$playerId]) || isset($seenPlayerIds[$playerId])) {
+                return false;
+            }
+
+            $seenPlayerIds[$playerId] = true;
+            if ((bool) $player['in_starting_eleven']) {
+                $starters[$playerId] = true;
+            }
+        }
+
+        if (count($starters) !== 11) {
+            return false;
+        }
+
         return $this->repo->setStatus($matchId, 'prepared');
     }
 
@@ -129,10 +154,39 @@ class MatchService
 
     public function saveLineup(int $matchId, array $players): bool
     {
-        $this->repo->clearMatchPlayers($matchId);
+        $match = $this->repo->getMatchById($matchId);
+        if ($match === null) {
+            return false;
+        }
+
+        $allowedPlayerIds = array_flip($this->getPresentPlayerIds($matchId, (int) $match['team_id']));
+        $sanitizedPlayers = [];
+        $seenPlayerIds = [];
+
         foreach ($players as $playerData) {
+            $playerId = isset($playerData['player_id']) ? (int) $playerData['player_id'] : 0;
+            if ($playerId <= 0 || !isset($allowedPlayerIds[$playerId]) || isset($seenPlayerIds[$playerId])) {
+                continue;
+            }
+
+            $seenPlayerIds[$playerId] = true;
+            $sanitizedPlayers[] = [
+                'player_id'          => $playerId,
+                'is_guest'           => 0,
+                'in_starting_eleven' => !empty($playerData['in_starting_eleven']) ? 1 : 0,
+                'position_label'     => $playerData['position_label'] ?? null,
+                'pos_x'              => isset($playerData['pos_x']) && $playerData['pos_x'] !== '' ? (float) $playerData['pos_x'] : null,
+                'pos_y'              => isset($playerData['pos_y']) && $playerData['pos_y'] !== '' ? (float) $playerData['pos_y'] : null,
+            ];
+        }
+
+        $pdo = Database::getInstance()->getConnection();
+        $pdo->prepare('DELETE FROM match_player WHERE match_id = ? AND is_guest = 0')->execute([$matchId]);
+
+        foreach ($sanitizedPlayers as $playerData) {
             $this->repo->saveMatchPlayer($matchId, $playerData);
         }
+
         return true;
     }
 
