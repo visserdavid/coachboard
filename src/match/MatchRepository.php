@@ -349,6 +349,14 @@ class MatchRepository
         return $stmt->execute([$id]);
     }
 
+    public function getEventById(int $id): ?array
+    {
+        $stmt = $this->pdo->prepare('SELECT * FROM match_event WHERE id = ? LIMIT 1');
+        $stmt->execute([$id]);
+        $result = $stmt->fetch();
+        return $result !== false ? $result : null;
+    }
+
     // -------------------------------------------------------------------------
     // Substitutions
     // -------------------------------------------------------------------------
@@ -389,6 +397,14 @@ class MatchRepository
     {
         $stmt = $this->pdo->prepare('DELETE FROM substitution WHERE id = ?');
         return $stmt->execute([$id]);
+    }
+
+    public function getSubstitutionById(int $id): ?array
+    {
+        $stmt = $this->pdo->prepare('SELECT * FROM substitution WHERE id = ? LIMIT 1');
+        $stmt->execute([$id]);
+        $result = $stmt->fetch();
+        return $result !== false ? $result : null;
     }
 
     // -------------------------------------------------------------------------

@@ -65,7 +65,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         case 'undo_sub':
             $subId = (int) ($_POST['substitution_id'] ?? 0);
-            if ($subId > 0) {
+            $sub = $subId > 0 ? $matchRepo->getSubstitutionById($subId) : null;
+            if ($sub !== null && (int) $sub['match_id'] === $matchId) {
                 $matchService->undoSubstitution($subId);
             }
             break;
@@ -75,7 +76,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $posX     = (float) ($_POST['pos_x']         ?? 0);
             $posY     = (float) ($_POST['pos_y']         ?? 0);
             $posLabel = trim($_POST['position_label']    ?? '');
-            if ($mpId > 0 && $posLabel !== '') {
+            $matchPlayer = $mpId > 0 ? $matchRepo->getMatchPlayerById($mpId) : null;
+            if ($matchPlayer !== null && (int) $matchPlayer['match_id'] === $matchId && $posLabel !== '') {
                 $matchRepo->updatePosition($mpId, $posX, $posY, $posLabel);
             }
             break;
@@ -125,7 +127,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         case 'delete_event':
             $eventId = (int) ($_POST['event_id'] ?? 0);
-            if ($eventId > 0) {
+            $event = $eventId > 0 ? $matchRepo->getEventById($eventId) : null;
+            if ($event !== null && (int) $event['match_id'] === $matchId) {
                 $matchService->deleteEvent($eventId);
             }
             break;
