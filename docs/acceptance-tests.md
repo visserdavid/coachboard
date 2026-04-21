@@ -65,7 +65,7 @@ This document contains the manual acceptance test scenarios for CoachBoard. Run 
 | 1 | Click the expired link | Error message shown |
 | 2 | Check error message | Clear message that link is invalid or expired |
 
-**Result:** ✅ pass / ❌ fail — Issue #___ — Remarks: ___
+**Result:** ✅ pass — Issue #___ — Remarks: ___
 
 ---
 
@@ -78,7 +78,7 @@ This document contains the manual acceptance test scenarios for CoachBoard. Run 
 | 2 | Click the send button | Same confirmation message as for a known address |
 | 3 | Check inbox | No email received |
 
-**Result:** ✅ pass / ❌ fail — Issue #___ — Remarks: ___
+**Result:** ✅ pass — Issue #___ — Remarks: ___
 
 ---
 
@@ -92,7 +92,7 @@ This document contains the manual acceptance test scenarios for CoachBoard. Run 
 | 3 | Navigate back using browser back button | Redirected to login page — session is gone |
 | 4 | Try to access any page directly via URL | Redirected to login page |
 
-**Result:** ✅ pass / ❌ fail — Issue #___ — Remarks: ___
+**Result:** ✅ pass — Issue #___ — Remarks: ___
 
 ---
 
@@ -114,7 +114,7 @@ This document contains the manual acceptance test scenarios for CoachBoard. Run 
 | 9 | Open the season detail | Phase section not visible — only season date range shown |
 | 10 | Check the dashboard | Active season name shown, no phase label |
 
-**Result:** ✅ pass / ❌ fail — Issue #___ — Remarks: ___
+**Result:** ✅ pass / ❌ fail — Issue #___ — Remarks: Meldingen gaan wijder dan het scherm, waardoor ze niet leesbaar zijn.
 
 ---
 
@@ -131,7 +131,7 @@ This document contains the manual acceptance test scenarios for CoachBoard. Run 
 | 6 | Open the season detail | Phase cards visible with labels and date ranges |
 | 7 | Check the dashboard | Active season name and current phase label shown |
 
-**Result:** ✅ pass / ❌ fail — Issue #___ — Remarks: ___
+**Result:** ✅ pass / ❌ fail — Issue #___ — Remarks: Tekst is krap op mobiel. Gebruik icoontjes (https://www.freeicons.org/icons/phosphor-fill)
 
 ---
 
@@ -144,7 +144,7 @@ This document contains the manual acceptance test scenarios for CoachBoard. Run 
 | 2 | Submit the form | Error message shown — season not created |
 | 3 | Check error message | Clear explanation that phases must not overlap |
 
-**Result:** ✅ pass / ❌ fail — Issue #___ — Remarks: ___
+**Result:** ✅ pass — Issue #___ — Remarks: ___
 
 ---
 
@@ -157,7 +157,7 @@ This document contains the manual acceptance test scenarios for CoachBoard. Run 
 | 2 | Submit the form | Error message shown — season not created |
 | 3 | Check error message | Clear explanation that phases must be continuous |
 
-**Result:** ✅ pass / ❌ fail — Issue #___ — Remarks: ___
+**Result:** ✅ pass — Issue #___ — Remarks: Vul automatisch datum in die ingaat op dag naar einde vorige fase
 
 ---
 
@@ -172,7 +172,7 @@ This document contains the manual acceptance test scenarios for CoachBoard. Run 
 | 4 | Complete and submit the form | New season created |
 | 5 | Check the squad | Players from source season are present |
 
-**Result:** ✅ pass / ❌ fail — Issue #___ — Remarks: ___
+**Result:** ✅ pass — Issue #___ — Remarks: ___
 
 ---
 
@@ -186,7 +186,7 @@ This document contains the manual acceptance test scenarios for CoachBoard. Run 
 | 3 | Check the season list | Active badge moved to selected season |
 | 4 | Check the dashboard | Dashboard shows the newly active season |
 
-**Result:** ✅ pass / ❌ fail — Issue #___ — Remarks: ___
+**Result:** ✅ pass — Issue #___ — Remarks: ___
 
 ---
 
@@ -204,7 +204,7 @@ This document contains the manual acceptance test scenarios for CoachBoard. Run 
 | 7 | Enter a date that already has a session | — |
 | 8 | Submit | Error message — duplicate not created |
 
-**Result:** ✅ pass / ❌ fail — Issue #___ — Remarks: ___
+**Result:** ✅ pass — Issue #___ — Remarks: ___
 
 ---
 
@@ -220,7 +220,7 @@ This document contains the manual acceptance test scenarios for CoachBoard. Run 
 | 3 | Fill in required fields | — |
 | 4 | Submit | Player appears in squad list |
 
-**Result:** ✅ pass / ❌ fail — Issue #___ — Remarks: ___
+**Result:** ✅ pass — Issue #___ — Remarks: Toestemming ouders hier niet nodig. Na invoer terug naar Squad settings. Squad name.
 
 ---
 
@@ -233,7 +233,7 @@ This document contains the manual acceptance test scenarios for CoachBoard. Run 
 | 2 | Edit a field (e.g. preferred position) | — |
 | 3 | Save | Changes reflected in the profile |
 
-**Result:** ✅ pass / ❌ fail — Issue #___ — Remarks: ___
+**Result:** ✅ pass — Issue #___ — Remarks: ___
 
 ---
 
@@ -246,7 +246,7 @@ This document contains the manual acceptance test scenarios for CoachBoard. Run 
 | 2 | Check historical match data | Player still appears in past match records |
 | 3 | Check historical attendance records | Player still appears in past training records |
 
-**Result:** ✅ pass / ❌ fail — Issue #___ — Remarks: ___
+**Result:** ✅ pass — Issue #___ — Remarks: ___
 
 ---
 
@@ -262,7 +262,7 @@ This document contains the manual acceptance test scenarios for CoachBoard. Run 
 | 3 | Fill in opponent, date, home/away, match type | — |
 | 4 | Submit | Match appears in match list with status: planned |
 
-**Result:** ✅ pass / ❌ fail — Issue #___ — Remarks: ___
+**Result:** ✅ pass — Issue #___ — Remarks: ___
 
 ---
 
@@ -275,7 +275,7 @@ This document contains the manual acceptance test scenarios for CoachBoard. Run 
 | 2 | Select starting eleven and substitutes | — |
 | 3 | Save | Line-up saved, match status: prepared |
 
-**Result:** ✅ pass / ❌ fail — Issue #___ — Remarks: ___
+**Result:** ✅ pass / ❌ fail — Issue #___ — Remarks: Kan niet starten met meer dan 11 spelers. Kan geen spelers plaatsen.
 
 ---
 
