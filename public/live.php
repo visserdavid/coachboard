@@ -39,7 +39,13 @@ if (empty($token)) {
 }
 
 $pdo   = Database::getInstance()->getConnection();
-$stmt  = $pdo->prepare('SELECT * FROM `match` WHERE livestream_token = ? AND deleted_at IS NULL LIMIT 1');
+$stmt  = $pdo->prepare(
+    'SELECT * FROM `match`
+     WHERE livestream_token = ?
+       AND status IN (\'planned\', \'prepared\', \'active\')
+       AND deleted_at IS NULL
+     LIMIT 1'
+);
 $stmt->execute([$token]);
 $match = $stmt->fetch() ?: null;
 

@@ -67,10 +67,16 @@ class MatchService
     public function getLivestreamUrl(int $matchId): string
     {
         $match = $this->repo->getMatchById($matchId);
-        if ($match === null || empty($match['livestream_token'])) {
+        if ($match === null) {
             return '';
         }
-        return APP_URL . '/live.php?token=' . $match['livestream_token'];
+
+        $token = (string) ($match['livestream_token'] ?? '');
+        if ($token === '' || strlen($token) < 32) {
+            $token = $this->generateLivestreamToken($matchId);
+        }
+
+        return APP_URL . '/live.php?token=' . $token;
     }
 
     public function loadLineupFromTemplate(int $matchId, int $templateMatchId): bool
@@ -450,6 +456,7 @@ class MatchService
 
         $this->repo->setScore($matchId, $goalsScored, $goalsConceded);
         $this->repo->setStatus($matchId, 'finished');
+        $this->repo->clearLivestreamToken($matchId);
         return true;
     }
 
@@ -486,7 +493,7 @@ class MatchService
 
     private function generateToken(): string
     {
-        return bin2hex(random_bytes(8));
+        return bin2hex(random_bytes(32));
     }
 
     private function validateMatch(array $data): array

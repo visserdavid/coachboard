@@ -235,6 +235,14 @@ class MatchRepository
         return $stmt->execute([$token, $id]);
     }
 
+    public function clearLivestreamToken(int $id): bool
+    {
+        $stmt = $this->pdo->prepare(
+            'UPDATE `match` SET livestream_token = NULL WHERE id = ?'
+        );
+        return $stmt->execute([$id]);
+    }
+
     // -------------------------------------------------------------------------
     // Halves
     // -------------------------------------------------------------------------
