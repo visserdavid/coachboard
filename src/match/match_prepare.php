@@ -6,6 +6,7 @@ $matchRepo    = new MatchRepository();
 $matchService = new MatchService();
 $playerRepo   = new PlayerRepository();
 $trainingRepo = new TrainingRepository();
+$errors       = [];
 
 $id    = (int) ($_GET['id'] ?? 0);
 $match = $matchRepo->getMatchById($id);
@@ -42,6 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($postAction === 'save_attendance') {
         $rawAttendance = (array) ($_POST['att'] ?? []);
 
+        $attendance = [];
         foreach ($rawAttendance as $playerId => $data) {
             $status = $data['status'] ?? 'present';
             if (!in_array($status, ['present', 'absent', 'injured'], true)) {
@@ -58,15 +60,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($status === 'injured') {
                 $note = trim($data['injury_note'] ?? '') ?: null;
             }
-            $trainingRepo->saveAttendance(
-                (int) $playerId,
-                'match',
-                $id,
-                ['status' => $status, 'absence_reason' => $reason, 'injury_note' => $note]
-            );
+            if ($status === 'absent' && $reason === null) {
+                $errors[] = t('attendance.reason') . ' ' . t('error.required');
+                break;
+            }
+            $attendance[(int) $playerId] = [
+                'status' => $status,
+                'absence_reason' => $reason,
+                'injury_note' => $note,
+            ];
         }
 
-        redirect(APP_URL . '/index.php?page=match&action=lineup&id=' . $id);
+        if (empty($errors)) {
+            foreach ($attendance as $playerId => $data) {
+                $trainingRepo->saveAttendance($playerId, 'match', $id, $data);
+            }
+            redirect(APP_URL . '/index.php?page=match&action=lineup&id=' . $id);
+        }
     }
 }
 
@@ -124,6 +134,14 @@ ob_start();
 
 <?php if ($flash !== null): ?>
     <div class="flash-message"><?= e($flash) ?></div>
+<?php endif; ?>
+
+<?php if (!empty($errors)): ?>
+    <div class="card" style="border-left:3px solid var(--color-danger);">
+        <?php foreach ($errors as $error): ?>
+            <p class="text-danger text-sm"><?= e($error) ?></p>
+        <?php endforeach; ?>
+    </div>
 <?php endif; ?>
 
 <!-- Progress indicator -->
@@ -231,6 +249,33 @@ ob_start();
         <?= e(t('match.prepare.next')) ?>
     </button>
 </form>
+
+<?php if (!empty($guests)): ?>
+<div class="card" style="margin-top:0.75rem;">
+    <strong style="display:block; margin-bottom:0.5rem;"><?= e(t('match.guest')) ?></strong>
+    <?php foreach ($guests as $guest): ?>
+        <div class="attendance-row">
+            <div class="flex-between">
+                <span>
+                    <?= e($guest['guest_name'] ?? '') ?>
+                    <?php if ($guest['guest_squad_number'] !== null): ?>
+                        <span class="text-muted text-sm">#<?= (int) $guest['guest_squad_number'] ?></span>
+                    <?php endif; ?>
+                    <span class="badge badge--accent" style="margin-left:0.3rem;"><?= e(t('match.guest')) ?></span>
+                </span>
+                <form method="POST" action="<?= e(APP_URL) ?>/index.php?page=match&action=prepare&id=<?= $id ?>">
+                    <?= csrfField() ?>
+                    <input type="hidden" name="_action" value="remove_guest">
+                    <input type="hidden" name="match_player_id" value="<?= (int) $guest['id'] ?>">
+                    <button type="submit" class="btn btn--danger btn--sm">
+                        <?= e(t('match.guest.remove')) ?>
+                    </button>
+                </form>
+            </div>
+        </div>
+    <?php endforeach; ?>
+</div>
+<?php endif; ?>
 
 <!-- Add guest player -->
 <div class="card" style="margin-top:0.75rem;">

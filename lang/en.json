@@ -125,6 +125,7 @@
   "attendance.reason.other": "Other",
   "attendance.injury_note": "Injury note (optional)",
   "attendance.reason": "Reason",
+  "attendance.reason_placeholder": "Select reason",
 
   "player.title": "Squad",
   "player.new": "New player",

@@ -10,6 +10,7 @@ require_once dirname(__DIR__, 2) . '/src/player/PlayerRepository.php';
 $trainingRepo = new TrainingRepository();
 $trainingService = new TrainingService();
 $playerRepo   = new PlayerRepository();
+$errors       = [];
 
 $id      = (int) ($_GET['id'] ?? 0);
 $session = $trainingRepo->getSessionById($id);
@@ -61,9 +62,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'injury_note'    => $note,
             ];
         }
-        $trainingService->saveAttendance($id, $attendance);
-        $_SESSION['flash'] = t('training.attendance_saved');
-        redirect(APP_URL . '/index.php?page=training&action=detail&id=' . $id);
+        try {
+            $trainingService->saveAttendance($id, $attendance);
+            $_SESSION['flash'] = t('training.attendance_saved');
+            redirect(APP_URL . '/index.php?page=training&action=detail&id=' . $id);
+        } catch (InvalidArgumentException $e) {
+            $errors[] = $e->getMessage();
+        }
     }
 }
 
@@ -95,6 +100,14 @@ ob_start();
 
 <?php if ($flash !== null): ?>
     <div class="flash-message"><?= e($flash) ?></div>
+<?php endif; ?>
+
+<?php if (!empty($errors)): ?>
+    <div class="card" style="border-left:3px solid var(--color-danger);">
+        <?php foreach ($errors as $error): ?>
+            <p class="text-danger text-sm"><?= e($error) ?></p>
+        <?php endforeach; ?>
+    </div>
 <?php endif; ?>
 
 <?php if ($isCancelled): ?>
@@ -266,6 +279,7 @@ if (seasonHasPhases() && $session['phase_id'] !== null): ?>
                          style="display:<?= $status === 'absent' ? 'block' : 'none' ?>;">
                         <select name="att[<?= $pid ?>][absence_reason]" class="form-select"
                                 style="margin-top:0.25rem;">
+                            <option value=""><?= e(t('attendance.reason_placeholder')) ?></option>
                             <?php foreach (['sick', 'holiday', 'school', 'other'] as $r): ?>
                                 <option value="<?= $r ?>"
                                     <?= ($att['absence_reason'] ?? '') === $r ? 'selected' : '' ?>>

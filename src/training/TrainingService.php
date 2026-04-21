@@ -71,6 +71,12 @@ class TrainingService
                 continue;
             }
 
+            $status = $data['status'] ?? 'present';
+            $reason = $data['absence_reason'] ?? null;
+            if ($status === 'absent' && !in_array($reason, ['sick', 'holiday', 'school', 'other'], true)) {
+                throw new InvalidArgumentException(t('attendance.reason') . ' ' . t('error.required'));
+            }
+
             $this->repo->saveAttendance(
                 $playerId,
                 'training_session',
