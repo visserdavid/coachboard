@@ -3,19 +3,22 @@ declare(strict_types=1);
 
 class Auth
 {
+    private static bool $userLoaded = false;
+    private static ?array $currentUser = null;
+
     public static function isLoggedIn(): bool
     {
-        return isset($_SESSION['user_id']) && $_SESSION['user_id'] > 0;
+        return self::getCurrentUser() !== null;
     }
 
     public static function getCurrentUser(): ?array
     {
-        if (!self::isLoggedIn()) {
+        if (!self::hasSessionUserId()) {
             return null;
         }
 
-        if (isset($_SESSION['user'])) {
-            return $_SESSION['user'];
+        if (self::$userLoaded) {
+            return self::$currentUser;
         }
 
         $pdo  = Database::getInstance()->getConnection();
@@ -28,13 +31,15 @@ class Auth
             return null;
         }
 
+        self::$userLoaded = true;
+        self::$currentUser = $user;
         $_SESSION['user'] = $user;
         return $user;
     }
 
     public static function requireLogin(): void
     {
-        if (!self::isLoggedIn()) {
+        if (self::getCurrentUser() === null) {
             redirect(APP_URL . '/index.php?page=auth&action=login');
         }
     }
@@ -52,6 +57,8 @@ class Auth
 
     public static function logout(): void
     {
+        self::$userLoaded = false;
+        self::$currentUser = null;
         $_SESSION = [];
         if (ini_get('session.use_cookies')) {
             $params = session_get_cookie_params();
@@ -77,5 +84,10 @@ class Auth
             'httponly' => true,
             'samesite' => 'Lax',
         ]);
+    }
+
+    private static function hasSessionUserId(): bool
+    {
+        return isset($_SESSION['user_id']) && $_SESSION['user_id'] > 0;
     }
 }
