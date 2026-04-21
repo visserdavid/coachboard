@@ -263,12 +263,21 @@ switch ($page) {
                 $s->execute([$dashTeamId]);
                 $dashRecent = $s->fetchAll();
 
-                // Next planned/prepared match
+                // Prefer an active match before the next future planned/prepared match.
                 $s = $pdo->prepare(
                     'SELECT * FROM `match`
-                     WHERE team_id = ? AND status IN (\'planned\',\'prepared\') AND deleted_at IS NULL
-                       AND date >= CURDATE()
-                     ORDER BY date ASC, kick_off_time ASC LIMIT 1'
+                     WHERE team_id = ? AND deleted_at IS NULL
+                       AND (
+                           status = \'active\'
+                           OR (
+                               status IN (\'planned\',\'prepared\')
+                               AND date >= CURDATE()
+                           )
+                       )
+                     ORDER BY CASE WHEN status = \'active\' THEN 0 ELSE 1 END,
+                              date ASC,
+                              kick_off_time ASC
+                     LIMIT 1'
                 );
                 $s->execute([$dashTeamId]);
                 $dashNext = $s->fetch() ?: null;

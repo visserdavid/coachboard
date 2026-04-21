@@ -172,7 +172,7 @@ ob_start();
             <div class="text-sm text-muted"><?= e(t('player.stats.assists')) ?></div>
         </div>
     </div>
-    <?php if ($stats['training_attendance_pct'] > 0 || true): ?>
+    <?php if ($stats['training_attendance_pct'] > 0): ?>
         <div style="margin-top:0.75rem; padding-top:0.75rem; border-top:1px solid var(--color-border);">
             <div class="flex-between">
                 <span class="text-sm text-muted"><?= e(t('player.stats.attendance')) ?></span>

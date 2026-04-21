@@ -380,7 +380,11 @@ input, select, textarea {
     font-size: var(--font-size-sm);
     font-weight: 500;
     z-index: 200;
-    white-space: nowrap;
+    width: max-content;
+    max-width: min(calc(100vw - 2rem), var(--max-width));
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
     box-shadow: var(--shadow-base);
     animation: flash-fade 4s ease forwards;
 }

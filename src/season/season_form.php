@@ -97,6 +97,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['flash'] = t('season.created') . ' '
                 . t('season.schedule_generated', ['count' => $count]);
 
+            $_SESSION['active_season'] = $repo->getActiveSeason();
+            $_SESSION['active_phases'] = $repo->getPhasesBySeason(
+                (int) ($_SESSION['active_season']['id'] ?? 0)
+            );
+
             redirect(APP_URL . '/index.php?page=season&action=detail&id=' . $seasonId);
 
         } catch (InvalidArgumentException $e) {
@@ -262,6 +267,26 @@ function togglePhaseSection(hasPhases) {
 function addPhase() {
     const container = document.getElementById('phases-container');
     const i = phaseCount;
+    const visibleRows = Array.from(container.querySelectorAll('.phase-row'))
+        .filter((row) => row.offsetParent !== null);
+    const previousVisibleRow = visibleRows.length > 0 ? visibleRows[visibleRows.length - 1] : null;
+    let nextStartDate = '';
+
+    if (previousVisibleRow) {
+        const previousEndDateInput = previousVisibleRow.querySelector('input[name$="[end_date]"]');
+        const previousEndDate = previousEndDateInput ? previousEndDateInput.value : '';
+        if (/^\d{4}-\d{2}-\d{2}$/.test(previousEndDate)) {
+            const date = new Date(`${previousEndDate}T00:00:00`);
+            if (!Number.isNaN(date.getTime())) {
+                date.setDate(date.getDate() + 1);
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                nextStartDate = `${year}-${month}-${day}`;
+            }
+        }
+    }
+
     const div = document.createElement('div');
     div.className = 'phase-row';
     div.style.cssText = 'border-top:1px solid var(--color-border); padding-top:0.75rem; margin-top:0.75rem;';
@@ -276,7 +301,7 @@ function addPhase() {
         </div>
         <div class="form-group">
             <label class="form-label"><?= e(t('season.phase.start')) ?></label>
-            <input type="date" name="phases[${i}][start_date]" class="form-input">
+            <input type="date" name="phases[${i}][start_date]" class="form-input" value="${nextStartDate}">
         </div>
         <div class="form-group">
             <label class="form-label"><?= e(t('season.phase.end')) ?></label>

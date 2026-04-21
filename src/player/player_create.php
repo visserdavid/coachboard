@@ -36,9 +36,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'photo_consent' => !empty($values['photo_consent']) ? 1 : 0,
         ];
 
-        $newId = $playerSvc->createPlayer($data);
+        $playerSvc->createPlayer($data);
         $_SESSION['flash'] = t('player.saved');
-        redirect(APP_URL . '/index.php?page=squad&action=edit&id=' . $newId);
+        redirect(APP_URL . '/index.php?page=squad&action=manage');
 
     } catch (InvalidArgumentException $e) {
         $errors[] = $e->getMessage();
