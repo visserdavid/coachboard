@@ -192,6 +192,7 @@ class PlayerRepository
              JOIN `match` m ON m.id = me.match_id
              JOIN team t ON t.id = m.team_id
              WHERE me.player_id = ? AND me.event_type = \'goal\'
+             AND NOT (me.scored_via = \'penalty\' AND COALESCE(me.penalty_scored, 1) = 0)
              AND t.season_id = ? AND m.deleted_at IS NULL'
         );
         $stmt->execute([$playerId, $seasonId]);
@@ -202,6 +203,7 @@ class PlayerRepository
              JOIN `match` m ON m.id = me.match_id
              JOIN team t ON t.id = m.team_id
              WHERE me.assist_player_id = ? AND me.event_type = \'goal\'
+             AND NOT (me.scored_via = \'penalty\' AND COALESCE(me.penalty_scored, 1) = 0)
              AND t.season_id = ? AND m.deleted_at IS NULL'
         );
         $stmt->execute([$playerId, $seasonId]);

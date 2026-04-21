@@ -4,6 +4,8 @@ declare(strict_types=1);
 class StatsRepository
 {
     private PDO $pdo;
+    private const COUNTABLE_GOAL_SQL = "me.event_type = 'goal'
+        AND NOT (me.scored_via = 'penalty' AND COALESCE(me.penalty_scored, 1) = 0)";
 
     public function __construct()
     {
@@ -168,7 +170,7 @@ class StatsRepository
              FROM match_event me
              JOIN `match` m ON m.id = me.match_id
              JOIN player p ON p.id = me.player_id
-             WHERE m.team_id = ? AND me.event_type = \'goal\'
+             WHERE m.team_id = ? AND ' . self::COUNTABLE_GOAL_SQL . '
                AND m.deleted_at IS NULL AND p.deleted_at IS NULL
              GROUP BY me.player_id, p.first_name
              ORDER BY goals DESC
@@ -185,7 +187,7 @@ class StatsRepository
              FROM match_event me
              JOIN `match` m ON m.id = me.match_id
              JOIN player p ON p.id = me.assist_player_id
-             WHERE m.team_id = ? AND me.event_type = \'goal\'
+             WHERE m.team_id = ? AND ' . self::COUNTABLE_GOAL_SQL . '
                AND me.assist_player_id IS NOT NULL
                AND m.deleted_at IS NULL AND p.deleted_at IS NULL
              GROUP BY me.assist_player_id, p.first_name
@@ -208,7 +210,7 @@ class StatsRepository
              FROM match_event me
              JOIN `match` m ON m.id = me.match_id
              JOIN player p ON p.id = me.player_id
-             WHERE m.team_id = ? AND me.event_type = \'goal\'
+             WHERE m.team_id = ? AND ' . self::COUNTABLE_GOAL_SQL . '
                AND m.deleted_at IS NULL AND p.deleted_at IS NULL
                AND m.date BETWEEN ? AND ?
              GROUP BY me.player_id, p.first_name
@@ -231,7 +233,7 @@ class StatsRepository
              FROM match_event me
              JOIN `match` m ON m.id = me.match_id
              JOIN player p ON p.id = me.assist_player_id
-             WHERE m.team_id = ? AND me.event_type = \'goal\'
+             WHERE m.team_id = ? AND ' . self::COUNTABLE_GOAL_SQL . '
                AND me.assist_player_id IS NOT NULL
                AND m.deleted_at IS NULL AND p.deleted_at IS NULL
                AND m.date BETWEEN ? AND ?
@@ -351,7 +353,7 @@ class StatsRepository
         $stmt = $this->pdo->prepare(
             'SELECT COUNT(me.id) FROM match_event me
              JOIN `match` m ON m.id = me.match_id
-             ' . $where . ' AND me.event_type = \'goal\''
+             ' . $where . ' AND ' . self::COUNTABLE_GOAL_SQL
         );
         $stmt->execute($params);
         return (int) $stmt->fetchColumn();
@@ -362,7 +364,7 @@ class StatsRepository
         $stmt = $this->pdo->prepare(
             'SELECT COUNT(me.id) FROM match_event me
              JOIN `match` m ON m.id = me.match_id
-             ' . $where . ' AND me.event_type = \'goal\''
+             ' . $where . ' AND ' . self::COUNTABLE_GOAL_SQL
         );
         $stmt->execute($params);
         return (int) $stmt->fetchColumn();
