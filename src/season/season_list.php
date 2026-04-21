@@ -62,6 +62,7 @@ ob_start();
                     <?php if (!$s['active']): ?>
                         <form method="POST" action="<?= e(APP_URL) ?>/index.php?page=season&action=set_active"
                               onsubmit="return confirm(<?= e(json_encode(t('season.set_active_confirm'))) ?>)">
+                            <?= csrfField() ?>
                             <input type="hidden" name="id" value="<?= (int) $s['id'] ?>">
                             <button type="submit" class="btn btn--accent btn--sm">
                                 <?= e(t('season.set_active')) ?>

@@ -186,6 +186,7 @@ ob_start();
         <label class="form-label"><?= e(t('match.lineup.template')) ?></label>
         <form method="POST"
               action="<?= e(APP_URL) ?>/index.php?page=match&action=lineup&id=<?= $id ?>">
+            <?= csrfField() ?>
             <input type="hidden" name="_action" value="load_template">
             <div style="display:flex; gap:0.5rem;">
                 <select name="template_match_id" class="form-select" style="flex:1;">
@@ -208,6 +209,7 @@ ob_start();
             <label class="form-label"><?= e(t('match.lineup.formation')) ?></label>
             <form method="POST"
                   action="<?= e(APP_URL) ?>/index.php?page=match&action=lineup&id=<?= $id ?>">
+                <?= csrfField() ?>
                 <input type="hidden" name="_action" value="change_formation">
                 <div style="display:flex; gap:0.5rem;">
                     <select name="formation_id" class="form-select" style="flex:1;">
@@ -337,6 +339,7 @@ ob_start();
     <form method="POST" action="<?= e(APP_URL) ?>/index.php?page=match&action=lineup&id=<?= $id ?>"
           id="confirm-form"
           onsubmit="return confirm(<?= e(json_encode(t('match.lineup.confirm_dialog'))) ?>)">
+        <?= csrfField() ?>
         <input type="hidden" name="_action" value="confirm">
         <button type="submit" class="btn btn--primary btn--full" <?= $ready ? '' : 'disabled' ?>>
             <?= e(t('match.lineup.confirm')) ?>
@@ -368,6 +371,7 @@ ob_start();
 <!-- Hidden form for saving a single position assignment -->
 <form id="assign-form" method="POST"
       action="<?= e(APP_URL) ?>/index.php?page=match&action=lineup&id=<?= $id ?>">
+    <?= csrfField() ?>
     <input type="hidden" name="_action" value="save_lineup">
     <div id="assign-positions-container"></div>
 </form>

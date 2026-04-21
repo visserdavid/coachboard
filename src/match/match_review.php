@@ -252,6 +252,7 @@ ob_start();
     <?php if (!empty($presentPlayers)): ?>
     <form method="POST"
           action="<?= e(APP_URL) ?>/index.php?page=match&action=rate&id=<?= $matchId ?>">
+        <?= csrfField() ?>
         <input type="hidden" name="match_id" value="<?= $matchId ?>">
         <?php foreach ($presentPlayers as $p):
             $pid = (int) $p['player_id'];
@@ -297,6 +298,7 @@ ob_start();
     <form method="POST"
           action="<?= e(APP_URL) ?>/index.php?page=match&action=review&id=<?= $matchId ?>"
           onsubmit="return confirm(<?= e(json_encode(t('review.reopen_confirm'))) ?>)">
+        <?= csrfField() ?>
         <input type="hidden" name="_action" value="reopen">
         <button type="submit" class="btn btn--secondary btn--full btn--sm" style="color:var(--color-danger);">
             <?= e(t('review.reopen')) ?>

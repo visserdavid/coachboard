@@ -97,6 +97,7 @@ ob_start();
 <?php endif; ?>
 
 <form method="POST" action="<?= e(APP_URL) ?>/index.php?page=staff&action=<?= $isEdit ? 'edit&id=' . $editId : 'create' ?>">
+    <?= csrfField() ?>
     <div class="card">
         <div class="form-group">
             <label class="form-label" for="first_name"><?= e(t('staff.first_name')) ?></label>

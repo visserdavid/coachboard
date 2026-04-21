@@ -114,6 +114,7 @@ if (seasonHasPhases() && $session['phase_id'] !== null): ?>
 <?php if (!$isCancelled): ?>
     <form method="POST" action="<?= e(APP_URL) ?>/index.php?page=training&action=cancel"
           onsubmit="return confirm(<?= e(json_encode(t('training.cancel_confirm'))) ?>)">
+        <?= csrfField() ?>
         <input type="hidden" name="session_id" value="<?= $id ?>">
         <div style="margin-bottom:0.75rem; text-align:right;">
             <button type="submit" class="btn btn--danger btn--sm">
@@ -123,6 +124,7 @@ if (seasonHasPhases() && $session['phase_id'] !== null): ?>
     </form>
 <?php else: ?>
     <form method="POST" action="<?= e(APP_URL) ?>/index.php?page=training&action=reinstate">
+        <?= csrfField() ?>
         <input type="hidden" name="session_id" value="<?= $id ?>">
         <div style="margin-bottom:0.75rem; text-align:right;">
             <button type="submit" class="btn btn--secondary btn--sm">
@@ -154,6 +156,7 @@ if (seasonHasPhases() && $session['phase_id'] !== null): ?>
     <?php else: ?>
         <form method="POST"
               action="<?= e(APP_URL) ?>/index.php?page=training&action=detail&id=<?= $id ?>">
+            <?= csrfField() ?>
             <input type="hidden" name="_action" value="save_content">
             <div style="display:flex; flex-direction:column; gap:0.5rem; margin-bottom:0.75rem;">
                 <?php foreach (['attacking', 'defending', 'transitioning'] as $f): ?>
@@ -228,6 +231,7 @@ if (seasonHasPhases() && $session['phase_id'] !== null): ?>
     <?php else: ?>
         <form method="POST"
               action="<?= e(APP_URL) ?>/index.php?page=training&action=detail&id=<?= $id ?>">
+            <?= csrfField() ?>
             <input type="hidden" name="_action" value="save_attendance">
             <?php foreach ($players as $player): ?>
                 <?php

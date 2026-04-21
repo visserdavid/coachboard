@@ -54,6 +54,7 @@ ob_start();
 
 <div class="card">
     <form method="POST" action="<?= e(APP_URL) ?>/index.php?page=match&action=create">
+        <?= csrfField() ?>
 
         <div class="form-group">
             <label class="form-label"><?= e(t('match.opponent')) ?></label>

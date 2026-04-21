@@ -60,6 +60,7 @@ ob_start();
                         <form method="POST"
                               action="<?= e(APP_URL) ?>/index.php?page=staff&action=deactivate"
                               onsubmit="return confirm(<?= e(json_encode(t('staff.deactivate_confirm'))) ?>)">
+                            <?= csrfField() ?>
                             <input type="hidden" name="id" value="<?= (int) $member['id'] ?>">
                             <button type="submit" class="btn btn--danger btn--sm">
                                 <?= e(t('staff.deactivate')) ?>
@@ -68,6 +69,7 @@ ob_start();
                     <?php else: ?>
                         <form method="POST"
                               action="<?= e(APP_URL) ?>/index.php?page=staff&action=reactivate">
+                            <?= csrfField() ?>
                             <input type="hidden" name="id" value="<?= (int) $member['id'] ?>">
                             <button type="submit" class="btn btn--secondary btn--sm">
                                 <?= e(t('staff.reactivate')) ?>

@@ -56,6 +56,7 @@ ob_start();
                     <?php if (!$f['is_default']): ?>
                         <form method="POST"
                               action="<?= e(APP_URL) ?>/index.php?page=formation&action=set_default">
+                            <?= csrfField() ?>
                             <input type="hidden" name="id" value="<?= (int) $f['id'] ?>">
                             <button type="submit" class="btn btn--secondary btn--sm">
                                 <?= e(t('formation.set_default')) ?>
@@ -68,6 +69,7 @@ ob_start();
                         <form method="POST"
                               action="<?= e(APP_URL) ?>/index.php?page=formation&action=delete"
                               onsubmit="return confirm(<?= e(json_encode(t('formation.delete_confirm'))) ?>)">
+                            <?= csrfField() ?>
                             <input type="hidden" name="id" value="<?= (int) $f['id'] ?>">
                             <button type="submit" class="btn btn--danger btn--sm">
                                 <?= e(t('action.delete')) ?>

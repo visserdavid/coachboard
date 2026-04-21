@@ -34,6 +34,39 @@ function redirect(string $url): never
     exit;
 }
 
+function getCsrfToken(): string
+{
+    if (empty($_SESSION['_csrf_token']) || !is_string($_SESSION['_csrf_token'])) {
+        $_SESSION['_csrf_token'] = bin2hex(random_bytes(32));
+    }
+
+    return $_SESSION['_csrf_token'];
+}
+
+function csrfField(): string
+{
+    return '<input type="hidden" name="_csrf" value="' . e(getCsrfToken()) . '">';
+}
+
+function validateCsrfToken(?string $token): bool
+{
+    return is_string($token)
+        && isset($_SESSION['_csrf_token'])
+        && is_string($_SESSION['_csrf_token'])
+        && hash_equals($_SESSION['_csrf_token'], $token);
+}
+
+function requireCsrfToken(): void
+{
+    if (validateCsrfToken($_POST['_csrf'] ?? null)) {
+        return;
+    }
+
+    http_response_code(403);
+    $_SESSION['flash'] = t('error.forbidden');
+    redirect(APP_URL . '/index.php?page=dashboard');
+}
+
 function getActiveSeason(): ?array
 {
     return $_SESSION['active_season'] ?? null;

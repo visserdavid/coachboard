@@ -137,6 +137,7 @@ ob_start();
 
 <form id="attendance-form" method="POST"
       action="<?= e(APP_URL) ?>/index.php?page=match&action=prepare&id=<?= $id ?>">
+    <?= csrfField() ?>
     <input type="hidden" name="_action" value="save_attendance">
 
     <div class="card">
@@ -209,6 +210,7 @@ ob_start();
                         <form method="POST"
                               action="<?= e(APP_URL) ?>/index.php?page=match&action=prepare&id=<?= $id ?>"
                               style="display:inline;">
+                            <?= csrfField() ?>
                             <input type="hidden" name="_action" value="remove_guest">
                             <input type="hidden" name="match_player_id" value="<?= (int) $guest['id'] ?>">
                             <button type="submit" class="btn btn--danger btn--sm">
@@ -234,6 +236,7 @@ ob_start();
 <div class="card" style="margin-top:0.75rem;">
     <strong style="display:block; margin-bottom:0.5rem;"><?= e(t('match.guest.add')) ?></strong>
     <form method="POST" action="<?= e(APP_URL) ?>/index.php?page=match&action=prepare&id=<?= $id ?>">
+        <?= csrfField() ?>
         <input type="hidden" name="_action" value="add_guest">
         <div class="form-group">
             <input type="text" name="guest_name" class="form-input"

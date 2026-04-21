@@ -126,6 +126,7 @@ ob_start();
 <?php if ($season['has_phases'] && !empty($phases)): ?>
     <?php foreach ($phases as $phase): ?>
         <form method="POST" action="<?= e(APP_URL) ?>/index.php?page=season&action=detail&id=<?= $id ?>">
+            <?= csrfField() ?>
             <input type="hidden" name="_action" value="update_phase">
             <input type="hidden" name="phase_id" value="<?= (int) $phase['id'] ?>">
             <div class="card">
@@ -157,6 +158,7 @@ ob_start();
 
 <!-- Training days -->
 <form method="POST" action="<?= e(APP_URL) ?>/index.php?page=season&action=detail&id=<?= $id ?>">
+    <?= csrfField() ?>
     <input type="hidden" name="_action" value="update_training_days">
     <div class="card">
         <label class="form-label"><?= e(t('season.training_days')) ?></label>
@@ -178,6 +180,7 @@ ob_start();
 <!-- Add manual training session -->
 <?php if ($teamId !== null): ?>
 <form method="POST" action="<?= e(APP_URL) ?>/index.php?page=season&action=add_training">
+    <?= csrfField() ?>
     <input type="hidden" name="team_id" value="<?= $teamId ?>">
     <div class="card">
         <label class="form-label"><?= e(t('season.add_training')) ?></label>

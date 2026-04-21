@@ -61,6 +61,10 @@ if ($page === 'auth') {
 // All other pages require authentication
 Auth::requireLogin();
 
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    requireCsrfToken();
+}
+
 // Lazy-load active season context into session
 if (!isset($_SESSION['active_season'])) {
     $seasonRepo = new SeasonRepository();

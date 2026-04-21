@@ -79,6 +79,7 @@ ob_start();
 
 <form method="POST"
       action="<?= e(APP_URL) ?>/index.php?page=formation&action=<?= $isEdit ? 'edit&id=' . $editId : 'create' ?>">
+    <?= csrfField() ?>
     <div class="card">
         <div class="form-group">
             <label class="form-label" for="name"><?= e(t('formation.name')) ?></label>

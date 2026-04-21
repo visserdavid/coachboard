@@ -297,6 +297,7 @@ ob_start();
     <?php if ($halfState === 'before'): ?>
         <form method="POST" action="<?= e($backUrl) ?>"
               onsubmit="return confirm(<?= e(json_encode(t('live.half.confirm_start'))) ?>)">
+            <?= csrfField() ?>
             <input type="hidden" name="_action" value="start_half">
             <input type="hidden" name="half" value="1">
             <button class="btn btn--primary btn--full"><?= e(t('live.half.start_first')) ?></button>
@@ -305,6 +306,7 @@ ob_start();
     <?php elseif ($halfState === 'h1_running'): ?>
         <form method="POST" action="<?= e($backUrl) ?>"
               onsubmit="return confirm(<?= e(json_encode(t('live.half.confirm_stop'))) ?>)">
+            <?= csrfField() ?>
             <input type="hidden" name="_action" value="stop_half">
             <input type="hidden" name="half" value="1">
             <button class="btn btn--secondary btn--full"><?= e(t('live.half.stop_first')) ?></button>
@@ -315,11 +317,13 @@ ob_start();
             <form method="POST" action="<?= e($backUrl) ?>"
                   onsubmit="return confirm(<?= e(json_encode(t('live.half.confirm_start'))) ?>)"
                   style="flex:2;">
+                <?= csrfField() ?>
                 <input type="hidden" name="_action" value="start_half">
                 <input type="hidden" name="half" value="2">
                 <button class="btn btn--primary btn--full"><?= e(t('live.half.start_second')) ?></button>
             </form>
             <form method="POST" action="<?= e($backUrl) ?>" style="flex:1;">
+                <?= csrfField() ?>
                 <input type="hidden" name="_action" value="resume_half">
                 <input type="hidden" name="half" value="1">
                 <button class="btn btn--secondary btn--full" style="font-size:0.85rem;">
@@ -342,6 +346,7 @@ ob_start();
                 <?= e(t('live.close.confirm')) ?>
             </button>
             <form method="POST" action="<?= e($backUrl) ?>" style="flex:1;">
+                <?= csrfField() ?>
                 <input type="hidden" name="_action" value="resume_half">
                 <input type="hidden" name="half" value="2">
                 <button class="btn btn--secondary btn--full" style="font-size:0.85rem;">
@@ -583,6 +588,7 @@ ob_start();
                     </span>
                     <form method="POST" action="<?= e($backUrl) ?>" style="display:inline;"
                           onsubmit="return confirm('<?= e(t('action.confirm')) ?>?')">
+                        <?= csrfField() ?>
                         <input type="hidden" name="_action" value="undo_sub">
                         <input type="hidden" name="substitution_id" value="<?= (int) $sub['id'] ?>">
                         <button type="submit" class="live-event-delete"
@@ -608,6 +614,7 @@ ob_start();
 
 <!-- Delete event form (hidden) -->
 <form id="delete-event-form" method="POST" action="<?= e($backUrl) ?>">
+    <?= csrfField() ?>
     <input type="hidden" name="_action" value="delete_event">
     <input type="hidden" name="event_id" id="delete-event-id" value="">
 </form>
@@ -628,6 +635,7 @@ ob_start();
         <div class="player-modal-title"><?= e(t('live.sub.select_incoming')) ?></div>
         <div id="sub-sheet-content"></div>
         <form id="sub-form" method="POST" action="<?= e($backUrl) ?>">
+            <?= csrfField() ?>
             <input type="hidden" name="_action" value="make_sub">
             <input type="hidden" name="player_off_id" id="sub-off-id">
             <input type="hidden" name="player_on_id"  id="sub-on-id">
@@ -640,6 +648,7 @@ ob_start();
     <div class="player-modal">
         <div class="player-modal-title"><?= e(t('live.position.change')) ?></div>
         <form id="pos-form" method="POST" action="<?= e($backUrl) ?>">
+            <?= csrfField() ?>
             <input type="hidden" name="_action" value="change_position">
             <input type="hidden" name="match_player_id" id="pos-mp-id">
             <input type="hidden" name="pos_x"           id="pos-x">
@@ -660,6 +669,7 @@ ob_start();
 
 <!-- Goal form (hidden, submitted via JS) -->
 <form id="goal-form" method="POST" action="<?= e($backUrl) ?>">
+    <?= csrfField() ?>
     <input type="hidden" name="_action"       id="gf-action"    value="register_goal">
     <input type="hidden" name="player_id"     id="gf-player"    value="">
     <input type="hidden" name="assist_player_id" id="gf-assist" value="">
@@ -670,6 +680,7 @@ ob_start();
 
 <!-- Card form -->
 <form id="card-form" method="POST" action="<?= e($backUrl) ?>">
+    <?= csrfField() ?>
     <input type="hidden" name="_action"   value="register_card">
     <input type="hidden" name="card_type" id="cf-type"   value="yellow_card">
     <input type="hidden" name="player_id" id="cf-player" value="">
@@ -677,6 +688,7 @@ ob_start();
 
 <!-- Note form -->
 <form id="note-form" method="POST" action="<?= e($backUrl) ?>">
+    <?= csrfField() ?>
     <input type="hidden" name="_action"  value="register_note">
     <input type="hidden" name="note_text" id="nf-text" value="">
 </form>
@@ -718,6 +730,7 @@ var formationPositions = <?= json_encode(array_map(fn($p) => [
 ], $positions)) ?>;
 
 var currentMinute = <?= $minute ?>;
+var csrfToken = <?= json_encode(getCsrfToken()) ?>;
 
 var labels = {
     makeSub:      <?= json_encode(t('live.sub.title')) ?>,
@@ -1081,6 +1094,11 @@ function submitCloseMatch(halfNum) {
         inp.type = 'hidden'; inp.name = pair[0]; inp.value = pair[1];
         form.appendChild(inp);
     });
+    var csrf = document.createElement('input');
+    csrf.type = 'hidden';
+    csrf.name = '_csrf';
+    csrf.value = csrfToken;
+    form.appendChild(csrf);
     document.body.appendChild(form);
     form.submit();
 }

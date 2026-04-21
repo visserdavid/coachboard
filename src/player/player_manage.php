@@ -66,6 +66,7 @@ ob_start();
                            class="btn btn--secondary btn--sm"><?= e(t('action.edit')) ?></a>
                         <form method="POST" action="<?= e(APP_URL) ?>/index.php?page=squad&action=delete"
                               onsubmit="return confirm(<?= e(json_encode(t('player.delete_confirm'))) ?>)">
+                            <?= csrfField() ?>
                             <input type="hidden" name="id" value="<?= (int) $player['id'] ?>">
                             <button type="submit" class="btn btn--danger btn--sm">
                                 <?= e(t('player.delete')) ?>
@@ -73,6 +74,7 @@ ob_start();
                         </form>
                     <?php else: ?>
                         <form method="POST" action="<?= e(APP_URL) ?>/index.php?page=squad&action=restore">
+                            <?= csrfField() ?>
                             <input type="hidden" name="id" value="<?= (int) $player['id'] ?>">
                             <button type="submit" class="btn btn--secondary btn--sm">
                                 <?= e(t('player.restore')) ?>

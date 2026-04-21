@@ -120,6 +120,7 @@ ob_start();
 <?php if ($canEdit): ?>
 <!-- Section 1: Basic details -->
 <form method="POST" enctype="multipart/form-data">
+    <?= csrfField() ?>
     <input type="hidden" name="_action" value="update_details">
     <div class="card">
         <h3 style="font-size:var(--font-size-sm);font-weight:600;color:var(--color-neutral);margin-bottom:0.75rem;">
@@ -190,6 +191,7 @@ ob_start();
 <?php if ($canSkills): ?>
 <!-- Section 2: Season baseline skills -->
 <form method="POST">
+    <?= csrfField() ?>
     <input type="hidden" name="_action" value="update_skills">
     <div class="card">
         <h3 style="font-size:var(--font-size-sm);font-weight:600;color:var(--color-neutral);margin-bottom:0.75rem;">

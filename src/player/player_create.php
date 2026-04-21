@@ -65,6 +65,7 @@ ob_start();
 <?php endif; ?>
 
 <form method="POST">
+    <?= csrfField() ?>
     <div class="card">
         <div class="form-group">
             <label class="form-label"><?= e(t('player.name')) ?></label>
