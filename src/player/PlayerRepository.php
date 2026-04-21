@@ -22,9 +22,14 @@ class PlayerRepository
         return $stmt->fetchAll();
     }
 
-    public function getPlayerById(int $id): ?array
+    public function getPlayerById(int $id, bool $includeDeleted = false): ?array
     {
-        $stmt = $this->pdo->prepare('SELECT * FROM `player` WHERE id = ? LIMIT 1');
+        $sql = 'SELECT * FROM `player` WHERE id = ?';
+        if (!$includeDeleted) {
+            $sql .= ' AND deleted_at IS NULL';
+        }
+        $sql .= ' LIMIT 1';
+        $stmt = $this->pdo->prepare($sql);
         $stmt->execute([$id]);
         $result = $stmt->fetch();
         return $result !== false ? $result : null;
