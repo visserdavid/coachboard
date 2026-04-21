@@ -55,6 +55,25 @@ class Auth
         }
     }
 
+    public static function requireAnyRole(array $roles): void
+    {
+        self::requireLogin();
+
+        $user = self::getCurrentUser();
+        if ($user === null) {
+            redirect(APP_URL . '/index.php?page=auth&action=login');
+        }
+
+        foreach ($roles as $role) {
+            if (!empty($user[$role])) {
+                return;
+            }
+        }
+
+        $_SESSION['flash'] = t('auth.access_denied');
+        redirect(APP_URL . '/index.php?page=dashboard');
+    }
+
     public static function logout(): void
     {
         self::$userLoaded = false;

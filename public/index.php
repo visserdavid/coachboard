@@ -106,6 +106,7 @@ if ($page === 'squad') {
 
 // Match pages manage their own output and layout
 if ($page === 'match') {
+    Auth::requireAnyRole(['is_administrator', 'is_coach']);
     switch ($action) {
         case 'create':
             require dirname(__DIR__) . '/src/match/match_create.php';
@@ -134,6 +135,7 @@ if ($page === 'match') {
 
 // Training pages manage their own output and layout
 if ($page === 'training') {
+    Auth::requireAnyRole(['is_administrator', 'is_trainer']);
     switch ($action) {
         case 'detail':
             require dirname(__DIR__) . '/src/training/training_detail.php';
