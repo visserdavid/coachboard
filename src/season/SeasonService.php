@@ -14,6 +14,8 @@ class SeasonService
 
     public function createNewSeason(array $data): int
     {
+        $shouldActivate = $this->repo->getActiveSeason() === null;
+
         if (!empty($data['has_phases']) && !empty($data['phases'])) {
             $this->validatePhases($data['phases']);
         }
@@ -27,6 +29,10 @@ class SeasonService
         $this->repo->setTrainingDays($teamId, $data['training_days'] ?? []);
 
         $this->createPhases($seasonId, $data);
+
+        if ($shouldActivate) {
+            $this->setActiveSeason($seasonId);
+        }
 
         return $seasonId;
     }
