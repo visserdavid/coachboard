@@ -276,6 +276,7 @@ CREATE TABLE IF NOT EXISTS `match_half` (
     `number`     TINYINT UNSIGNED NOT NULL,
     `started_at` TIMESTAMP     NULL DEFAULT NULL,
     `stopped_at` TIMESTAMP     NULL DEFAULT NULL,
+    `elapsed_seconds` INT UNSIGNED NOT NULL DEFAULT 0,
     `created_at` TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uq_match_half_match_number` (`match_id`, `number`),
@@ -291,7 +292,9 @@ CREATE TABLE IF NOT EXISTS `match_event` (
     -- event_type: 'goal', 'own_goal', 'yellow_card', 'red_card', 'note'
     `event_type`      VARCHAR(15)   NOT NULL,
     `player_id`       INT UNSIGNED  NULL DEFAULT NULL,
+    `match_player_id` INT UNSIGNED  NULL DEFAULT NULL,
     `assist_player_id` INT UNSIGNED NULL DEFAULT NULL,
+    `assist_match_player_id` INT UNSIGNED NULL DEFAULT NULL,
     -- scored_via: 'open_play', 'free_kick', 'penalty'
     `scored_via`      VARCHAR(15)   NULL DEFAULT NULL,
     `penalty_scored`  TINYINT(1)    NULL DEFAULT NULL,
@@ -303,7 +306,9 @@ CREATE TABLE IF NOT EXISTS `match_event` (
     KEY `idx_match_event_match_id` (`match_id`),
     CONSTRAINT `fk_match_event_match` FOREIGN KEY (`match_id`) REFERENCES `match` (`id`) ON DELETE RESTRICT,
     CONSTRAINT `fk_match_event_player` FOREIGN KEY (`player_id`) REFERENCES `player` (`id`) ON DELETE RESTRICT,
-    CONSTRAINT `fk_match_event_assist_player` FOREIGN KEY (`assist_player_id`) REFERENCES `player` (`id`) ON DELETE RESTRICT
+    CONSTRAINT `fk_match_event_match_player` FOREIGN KEY (`match_player_id`) REFERENCES `match_player` (`id`) ON DELETE RESTRICT,
+    CONSTRAINT `fk_match_event_assist_player` FOREIGN KEY (`assist_player_id`) REFERENCES `player` (`id`) ON DELETE RESTRICT,
+    CONSTRAINT `fk_match_event_assist_match_player` FOREIGN KEY (`assist_match_player_id`) REFERENCES `match_player` (`id`) ON DELETE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
@@ -312,14 +317,18 @@ CREATE TABLE IF NOT EXISTS `substitution` (
     `match_id`      INT UNSIGNED    NOT NULL,
     `half`          TINYINT UNSIGNED NOT NULL,
     `minute`        TINYINT UNSIGNED NOT NULL,
-    `player_off_id` INT UNSIGNED    NOT NULL,
-    `player_on_id`  INT UNSIGNED    NOT NULL,
+    `player_off_id` INT UNSIGNED    NULL DEFAULT NULL,
+    `player_off_match_player_id` INT UNSIGNED NOT NULL,
+    `player_on_id`  INT UNSIGNED    NULL DEFAULT NULL,
+    `player_on_match_player_id` INT UNSIGNED NOT NULL,
     `created_at`    TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (`id`),
     KEY `idx_substitution_match_id` (`match_id`),
     CONSTRAINT `fk_substitution_match` FOREIGN KEY (`match_id`) REFERENCES `match` (`id`) ON DELETE RESTRICT,
     CONSTRAINT `fk_substitution_player_off` FOREIGN KEY (`player_off_id`) REFERENCES `player` (`id`) ON DELETE RESTRICT,
-    CONSTRAINT `fk_substitution_player_on` FOREIGN KEY (`player_on_id`) REFERENCES `player` (`id`) ON DELETE RESTRICT
+    CONSTRAINT `fk_substitution_player_off_match_player` FOREIGN KEY (`player_off_match_player_id`) REFERENCES `match_player` (`id`) ON DELETE RESTRICT,
+    CONSTRAINT `fk_substitution_player_on` FOREIGN KEY (`player_on_id`) REFERENCES `player` (`id`) ON DELETE RESTRICT,
+    CONSTRAINT `fk_substitution_player_on_match_player` FOREIGN KEY (`player_on_match_player_id`) REFERENCES `match_player` (`id`) ON DELETE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 

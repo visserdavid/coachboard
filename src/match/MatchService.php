@@ -61,6 +61,9 @@ class MatchService
 
         foreach ($players as $player) {
             if ((bool) $player['is_guest']) {
+                if ((bool) $player['in_starting_eleven']) {
+                    $starters[(int) $player['id']] = true;
+                }
                 continue;
             }
 
@@ -68,10 +71,9 @@ class MatchService
             if ($playerId <= 0 || !isset($allowedPlayerIds[$playerId]) || isset($seenPlayerIds[$playerId])) {
                 return false;
             }
-
             $seenPlayerIds[$playerId] = true;
             if ((bool) $player['in_starting_eleven']) {
-                $starters[$playerId] = true;
+                $starters[(int) $player['id']] = true;
             }
         }
 
@@ -160,31 +162,49 @@ class MatchService
         }
 
         $allowedPlayerIds = array_flip($this->getPresentPlayerIds($matchId, (int) $match['team_id']));
-        $sanitizedPlayers = [];
+        $existingPlayers  = [];
+        foreach ($this->repo->getMatchPlayers($matchId) as $matchPlayer) {
+            $existingPlayers[(int) $matchPlayer['id']] = $matchPlayer;
+        }
         $seenPlayerIds = [];
 
         foreach ($players as $playerData) {
+            $matchPlayerId = isset($playerData['match_player_id']) ? (int) $playerData['match_player_id'] : 0;
             $playerId = isset($playerData['player_id']) ? (int) $playerData['player_id'] : 0;
+
+            if ($matchPlayerId > 0 && isset($existingPlayers[$matchPlayerId])) {
+                $existing = $existingPlayers[$matchPlayerId];
+                if ((bool) $existing['is_guest']) {
+                    $this->repo->updateMatchPlayer($matchPlayerId, [
+                        'in_starting_eleven' => !empty($playerData['in_starting_eleven']) ? 1 : 0,
+                        'position_label'     => $playerData['position_label'] ?? null,
+                        'pos_x'              => isset($playerData['pos_x']) && $playerData['pos_x'] !== '' ? (float) $playerData['pos_x'] : null,
+                        'pos_y'              => isset($playerData['pos_y']) && $playerData['pos_y'] !== '' ? (float) $playerData['pos_y'] : null,
+                    ]);
+                    continue;
+                }
+            }
+
             if ($playerId <= 0 || !isset($allowedPlayerIds[$playerId]) || isset($seenPlayerIds[$playerId])) {
                 continue;
             }
-
             $seenPlayerIds[$playerId] = true;
-            $sanitizedPlayers[] = [
-                'player_id'          => $playerId,
-                'is_guest'           => 0,
+
+            $targetMatchPlayerId = $matchPlayerId;
+            if ($targetMatchPlayerId <= 0 || !isset($existingPlayers[$targetMatchPlayerId])) {
+                $existing = $this->repo->getMatchPlayerByPlayerId($matchId, $playerId);
+                $targetMatchPlayerId = (int) ($existing['id'] ?? 0);
+            }
+            if ($targetMatchPlayerId <= 0) {
+                continue;
+            }
+
+            $this->repo->updateMatchPlayer($targetMatchPlayerId, [
                 'in_starting_eleven' => !empty($playerData['in_starting_eleven']) ? 1 : 0,
                 'position_label'     => $playerData['position_label'] ?? null,
                 'pos_x'              => isset($playerData['pos_x']) && $playerData['pos_x'] !== '' ? (float) $playerData['pos_x'] : null,
                 'pos_y'              => isset($playerData['pos_y']) && $playerData['pos_y'] !== '' ? (float) $playerData['pos_y'] : null,
-            ];
-        }
-
-        $pdo = Database::getInstance()->getConnection();
-        $pdo->prepare('DELETE FROM match_player WHERE match_id = ? AND is_guest = 0')->execute([$matchId]);
-
-        foreach ($sanitizedPlayers as $playerData) {
-            $this->repo->saveMatchPlayer($matchId, $playerData);
+            ]);
         }
 
         return true;
@@ -285,6 +305,7 @@ class MatchService
 
     public function registerGoal(int $matchId, array $data): int
     {
+        $this->hydrateEventParticipants($matchId, $data);
         $data['match_id']   = $matchId;
         $data['event_type'] = $data['event_type'] ?? 'goal';
         $data['half']       = $data['half']   ?? $this->getCurrentHalfNumber($matchId);
@@ -294,6 +315,7 @@ class MatchService
 
     public function registerCard(int $matchId, array $data): int
     {
+        $this->hydrateEventParticipants($matchId, $data);
         $data['match_id'] = $matchId;
         $data['half']     = $data['half']   ?? $this->getCurrentHalfNumber($matchId);
         $data['minute']   = $data['minute'] ?? $this->getCurrentMinute($matchId);
@@ -324,21 +346,27 @@ class MatchService
         $data['half']     = $data['half']   ?? $this->getCurrentHalfNumber($matchId);
         $data['minute']   = $data['minute'] ?? $this->getCurrentMinute($matchId);
 
-        // Move players on the pitch
-        $offPlayer = $this->repo->getMatchPlayerByPlayerId($matchId, (int) $data['player_off_id']);
-        $onPlayer  = $this->repo->getMatchPlayerByPlayerId($matchId, (int) $data['player_on_id']);
+        $offPlayer = $this->resolveMatchPlayer($matchId, $data['player_off_match_player_id'] ?? null, $data['player_off_id'] ?? null);
+        $onPlayer  = $this->resolveMatchPlayer($matchId, $data['player_on_match_player_id'] ?? null, $data['player_on_id'] ?? null);
 
-        if ($offPlayer !== null && $onPlayer !== null) {
-            // Move incoming player to position of outgoing player
-            $this->repo->updatePosition(
-                (int) $onPlayer['id'],
-                (float) $offPlayer['pos_x'],
-                (float) $offPlayer['pos_y'],
-                (string) $offPlayer['position_label']
-            );
-            $this->repo->moveToStartingEleven((int) $onPlayer['id']);
-            $this->repo->moveToBench((int) $offPlayer['id']);
+        if ($offPlayer === null || $onPlayer === null || (int) $offPlayer['id'] === (int) $onPlayer['id']) {
+            return 0;
         }
+
+        $data['player_off_match_player_id'] = (int) $offPlayer['id'];
+        $data['player_on_match_player_id']  = (int) $onPlayer['id'];
+        $data['player_off_id'] = $offPlayer['player_id'] !== null ? (int) $offPlayer['player_id'] : null;
+        $data['player_on_id']  = $onPlayer['player_id'] !== null ? (int) $onPlayer['player_id'] : null;
+
+        // Move incoming player to position of outgoing player
+        $this->repo->updatePosition(
+            (int) $onPlayer['id'],
+            (float) $offPlayer['pos_x'],
+            (float) $offPlayer['pos_y'],
+            (string) $offPlayer['position_label']
+        );
+        $this->repo->moveToStartingEleven((int) $onPlayer['id']);
+        $this->repo->moveToBench((int) $offPlayer['id']);
 
         return $this->repo->createSubstitution($data);
     }
@@ -354,8 +382,8 @@ class MatchService
         }
 
         $matchId    = (int) $sub['match_id'];
-        $offPlayer  = $this->repo->getMatchPlayerByPlayerId($matchId, (int) $sub['player_off_id']);
-        $onPlayer   = $this->repo->getMatchPlayerByPlayerId($matchId, (int) $sub['player_on_id']);
+        $offPlayer  = $this->resolveMatchPlayer($matchId, $sub['player_off_match_player_id'] ?? null, $sub['player_off_id'] ?? null);
+        $onPlayer   = $this->resolveMatchPlayer($matchId, $sub['player_on_match_player_id'] ?? null, $sub['player_on_id'] ?? null);
 
         if ($offPlayer !== null && $onPlayer !== null) {
             // Restore outgoing player to the field, send incoming player back to bench
@@ -382,12 +410,11 @@ class MatchService
         $totalSeconds = 0;
 
         foreach ($halves as $half) {
-            if ($half['started_at'] === null) {
+            $elapsedSeconds = (int) ($half['elapsed_seconds'] ?? 0);
+            if ($half['started_at'] === null && $elapsedSeconds === 0) {
                 continue;
             }
-            $start = strtotime($half['started_at']);
-            $end   = $half['stopped_at'] !== null ? strtotime($half['stopped_at']) : time();
-            $totalSeconds += max(0, $end - $start);
+            $totalSeconds += $this->getHalfElapsedSeconds($half);
         }
 
         return (int) floor($totalSeconds / 60) + 1;
@@ -414,16 +441,12 @@ class MatchService
         $halfTimelines = [];
         $cumulativeSeconds = 0;
         foreach ($halves as $half) {
-            if ($half['started_at'] === null) {
+            $halfDuration = $this->getHalfElapsedSeconds($half);
+            if ($halfDuration <= 0) {
                 continue;
             }
-            $halfStart    = strtotime($half['started_at']);
-            $halfEnd      = $half['stopped_at'] !== null ? strtotime($half['stopped_at']) : time();
-            $halfDuration = max(0, $halfEnd - $halfStart);
             $halfTimelines[(int) $half['number']] = [
-                'offset'   => $cumulativeSeconds, // seconds from match start when this half began
-                'start_ts' => $halfStart,
-                'end_ts'   => $halfEnd,
+                'offset'   => $cumulativeSeconds,
                 'duration' => $halfDuration,
             ];
             $cumulativeSeconds += $halfDuration;
@@ -439,12 +462,14 @@ class MatchService
             if (!isset($halfTimelines[$halfNum])) {
                 continue;
             }
-            // Approximate seconds from match start = half offset + (minute - 1) * 60
-            $subSeconds = $halfTimelines[$halfNum]['offset'] + max(0, ($minute - 1) * 60);
+            $subSeconds = $halfTimelines[$halfNum]['offset'] + min(
+                $halfTimelines[$halfNum]['duration'],
+                max(0, ($minute - 1) * 60)
+            );
             $subEvents[] = [
                 'second'        => $subSeconds,
-                'player_off_id' => (int) $sub['player_off_id'],
-                'player_on_id'  => (int) $sub['player_on_id'],
+                'player_off_match_player_id' => (int) ($sub['player_off_match_player_id'] ?? 0),
+                'player_on_match_player_id'  => (int) ($sub['player_on_match_player_id'] ?? 0),
             ];
         }
 
@@ -452,7 +477,6 @@ class MatchService
         $result = [];
         foreach ($players as $mp) {
             $mpId      = (int) $mp['id'];
-            $playerId  = isset($mp['player_id']) ? (int) $mp['player_id'] : null;
             $isStarter = (bool) $mp['in_starting_eleven'];
 
             if ($totalMatchSeconds === 0) {
@@ -468,7 +492,7 @@ class MatchService
                 $onSecond  = null;
                 $offSecond = $totalMatchSeconds;
                 foreach ($subEvents as $sub) {
-                    if ($playerId !== null && $sub['player_on_id'] === $playerId) {
+                    if ($sub['player_on_match_player_id'] === $mpId) {
                         $onSecond = $sub['second'];
                         break;
                     }
@@ -481,7 +505,7 @@ class MatchService
 
             // Check if this player was substituted off
             foreach ($subEvents as $sub) {
-                if ($playerId !== null && $sub['player_off_id'] === $playerId) {
+                if ($sub['player_off_match_player_id'] === $mpId) {
                     if ($sub['second'] >= ($onSecond ?? 0)) {
                         $offSecond = $sub['second'];
                         break;
@@ -521,7 +545,7 @@ class MatchService
         $conceded  = 0;
         foreach ($events as $e) {
             if ($e['event_type'] === 'goal') {
-                if ($e['scored_via'] === 'penalty' && $e['penalty_scored'] == 0) {
+                if ($this->isMissedPenalty($e)) {
                     continue; // missed penalty
                 }
                 $scored++;
@@ -576,5 +600,53 @@ class MatchService
         }
 
         return $errors;
+    }
+
+    private function hydrateEventParticipants(int $matchId, array &$data): void
+    {
+        if (array_key_exists('match_player_id', $data) || array_key_exists('player_id', $data)) {
+            $player = $this->resolveMatchPlayer($matchId, $data['match_player_id'] ?? null, $data['player_id'] ?? null);
+            $data['match_player_id'] = $player !== null ? (int) $player['id'] : null;
+            $data['player_id'] = ($player !== null && $player['player_id'] !== null) ? (int) $player['player_id'] : null;
+        }
+
+        if (array_key_exists('assist_match_player_id', $data) || array_key_exists('assist_player_id', $data)) {
+            $assist = $this->resolveMatchPlayer($matchId, $data['assist_match_player_id'] ?? null, $data['assist_player_id'] ?? null);
+            $data['assist_match_player_id'] = $assist !== null ? (int) $assist['id'] : null;
+            $data['assist_player_id'] = ($assist !== null && $assist['player_id'] !== null) ? (int) $assist['player_id'] : null;
+        }
+    }
+
+    private function resolveMatchPlayer(int $matchId, mixed $matchPlayerId, mixed $playerId): ?array
+    {
+        $matchPlayerId = (int) $matchPlayerId;
+        if ($matchPlayerId > 0) {
+            $matchPlayer = $this->repo->getMatchPlayerById($matchPlayerId);
+            if ($matchPlayer !== null && (int) $matchPlayer['match_id'] === $matchId) {
+                return $matchPlayer;
+            }
+        }
+
+        $playerId = (int) $playerId;
+        if ($playerId > 0) {
+            return $this->repo->getMatchPlayerByPlayerId($matchId, $playerId);
+        }
+
+        return null;
+    }
+
+    private function getHalfElapsedSeconds(array $half): int
+    {
+        $elapsedSeconds = (int) ($half['elapsed_seconds'] ?? 0);
+        if ($half['started_at'] === null || $half['stopped_at'] !== null) {
+            return $elapsedSeconds;
+        }
+
+        return $elapsedSeconds + max(0, time() - strtotime((string) $half['started_at']));
+    }
+
+    private function isMissedPenalty(array $event): bool
+    {
+        return ($event['scored_via'] ?? null) === 'penalty' && (int) ($event['penalty_scored'] ?? 1) === 0;
     }
 }

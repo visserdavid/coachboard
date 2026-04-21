@@ -67,8 +67,8 @@ $playerGoals   = [];
 $playerAssists = [];
 $playerCards   = [];
 foreach ($events as $e) {
-    $pid = $e['player_id'] !== null ? (int) $e['player_id'] : null;
-    $aid = $e['assist_player_id'] !== null ? (int) $e['assist_player_id'] : null;
+    $pid = $e['match_player_id'] !== null ? (int) $e['match_player_id'] : ($e['player_id'] !== null ? (int) $e['player_id'] : null);
+    $aid = $e['assist_match_player_id'] !== null ? (int) $e['assist_match_player_id'] : ($e['assist_player_id'] !== null ? (int) $e['assist_player_id'] : null);
     if ($e['event_type'] === 'goal') {
         if (!($e['scored_via'] === 'penalty' && $e['penalty_scored'] == 0)) {
             if ($pid !== null) { $playerGoals[$pid]   = ($playerGoals[$pid]   ?? 0) + 1; }
@@ -206,7 +206,7 @@ ob_start();
     <h3 class="text-sm text-muted mb-2" style="font-weight:600;"><?= e(t('review.playing_time')) ?></h3>
     <?php foreach ($playersSorted as $p):
         $mpId    = (int) $p['id'];
-        $pid     = (int) $p['player_id'];
+        $pid     = (int) $p['id'];
         $name    = (bool) $p['is_guest'] ? ($p['guest_name'] ?? t('match.guest')) : ($p['first_name'] ?? '?');
         $pTime   = isset($playingTimes[$mpId]) ? (int) floor($playingTimes[$mpId] / 60) : 0;
         $goals   = $playerGoals[$pid]   ?? 0;

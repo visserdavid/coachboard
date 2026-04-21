@@ -305,7 +305,7 @@ function playerDisplayName(array $p): string
             <div class="ls-event-row">
                 <span class="ls-event-min"><?= (int) $sub['minute'] ?>'</span>
                 <span>↕</span>
-                <span><?= e($sub['player_on_name']) ?> · ↓ <?= e($sub['player_off_name']) ?></span>
+                <span>↑ <?= e($sub['player_on_name']) ?> · ↓ <?= e($sub['player_off_name']) ?></span>
             </div>
             <?php else:
                 $ev     = $entry['data'];

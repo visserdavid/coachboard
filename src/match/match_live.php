@@ -53,12 +53,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             break;
 
         case 'make_sub':
-            $playerOffId = (int) ($_POST['player_off_id'] ?? 0);
-            $playerOnId  = (int) ($_POST['player_on_id']  ?? 0);
+            $playerOffId = (int) ($_POST['player_off_match_player_id'] ?? 0);
+            $playerOnId  = (int) ($_POST['player_on_match_player_id']  ?? 0);
             if ($playerOffId > 0 && $playerOnId > 0) {
                 $matchService->registerSubstitution($matchId, [
-                    'player_off_id' => $playerOffId,
-                    'player_on_id'  => $playerOnId,
+                    'player_off_match_player_id' => $playerOffId,
+                    'player_on_match_player_id'  => $playerOnId,
                 ]);
             }
             break;
@@ -87,8 +87,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $eventType    = ($postAction === 'register_own_goal') ? 'own_goal' : 'goal';
             $scoredVia    = $_POST['scored_via']      ?? 'open_play';
             $penaltyScored = isset($_POST['penalty_scored']) ? (int) $_POST['penalty_scored'] : null;
-            $playerIdRaw  = isset($_POST['player_id']) && $_POST['player_id'] !== '' ? (int) $_POST['player_id'] : null;
-            $assistIdRaw  = isset($_POST['assist_player_id']) && $_POST['assist_player_id'] !== '' ? (int) $_POST['assist_player_id'] : null;
+            $playerIdRaw  = isset($_POST['match_player_id']) && $_POST['match_player_id'] !== '' ? (int) $_POST['match_player_id'] : null;
+            $assistIdRaw  = isset($_POST['assist_match_player_id']) && $_POST['assist_match_player_id'] !== '' ? (int) $_POST['assist_match_player_id'] : null;
             $zone         = $_POST['zone'] ?? null;
 
             $validZones = ['tl', 'tm', 'tr', 'ml', 'mm', 'mr', 'bl', 'bm', 'br'];
@@ -98,8 +98,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             $matchService->registerGoal($matchId, [
                 'event_type'       => $eventType,
-                'player_id'        => $playerIdRaw,
-                'assist_player_id' => $assistIdRaw,
+                'match_player_id'        => $playerIdRaw,
+                'assist_match_player_id' => $assistIdRaw,
                 'scored_via'       => $scoredVia,
                 'penalty_scored'   => $penaltyScored,
                 'zone'             => $zone,
@@ -109,11 +109,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         case 'register_card':
             $cardType = $_POST['card_type'] ?? 'yellow_card';
             if (!in_array($cardType, ['yellow_card', 'red_card'], true)) { $cardType = 'yellow_card'; }
-            $cardPlayerId = isset($_POST['player_id']) && $_POST['player_id'] !== '' ? (int) $_POST['player_id'] : null;
+            $cardPlayerId = isset($_POST['match_player_id']) && $_POST['match_player_id'] !== '' ? (int) $_POST['match_player_id'] : null;
             if ($cardPlayerId !== null) {
                 $matchService->registerCard($matchId, [
                     'event_type' => $cardType,
-                    'player_id'  => $cardPlayerId,
+                    'match_player_id'  => $cardPlayerId,
                 ]);
             }
             break;
@@ -206,8 +206,8 @@ $playerGoals   = [];
 $playerAssists = [];
 $playerCards   = [];
 foreach ($events as $e) {
-    $pid = $e['player_id'] !== null ? (int) $e['player_id'] : null;
-    $aid = $e['assist_player_id'] !== null ? (int) $e['assist_player_id'] : null;
+    $pid = $e['match_player_id'] !== null ? (int) $e['match_player_id'] : ($e['player_id'] !== null ? (int) $e['player_id'] : null);
+    $aid = $e['assist_match_player_id'] !== null ? (int) $e['assist_match_player_id'] : ($e['assist_player_id'] !== null ? (int) $e['assist_player_id'] : null);
     if ($e['event_type'] === 'goal') {
         if ($e['scored_via'] !== 'penalty' || $e['penalty_scored'] != 0) {
             if ($pid !== null) { $playerGoals[$pid] = ($playerGoals[$pid] ?? 0) + 1; }
@@ -385,16 +385,13 @@ ob_start();
                     ?>
                     <div class="pitch-position"
                          style="left:<?= $posX ?>%; top:<?= $posY ?>%;"
-                         <?php if (!$isGuest): ?>
                          onclick="openPlayerSheet(<?= htmlspecialchars(json_encode([
                              'mpId'          => $mpId,
-                             'playerId'      => $pid,
                              'name'          => $name,
                              'positionLabel' => $sp['position_label'],
                              'posX'          => $posX,
                              'posY'          => $posY,
                          ]), ENT_QUOTES) ?>)"
-                         <?php endif; ?>
                          >
                         <div class="pitch-circle pitch-circle--filled">
                             <?= e($initls) ?>
@@ -450,7 +447,7 @@ ob_start();
             <?php foreach ($starters as $sp): ?>
                 <?php
                 $name    = livePlayerName($sp);
-                $pid     = (int) $sp['player_id'];
+                $pid     = (int) $sp['id'];
                 $mpId    = (int) $sp['id'];
                 $pTime   = isset($playingTimes[$mpId]) ? (int) floor($playingTimes[$mpId] / 60) : 0;
                 $goals   = $playerGoals[$pid]   ?? 0;
@@ -459,8 +456,9 @@ ob_start();
                 ?>
                 <div class="live-player-row">
                     <div class="live-player-number">
-                        <?php if ($sp['squad_number'] !== null): ?>
-                            <span><?= (int) $sp['squad_number'] ?></span>
+                        <?php $number = (bool) $sp['is_guest'] ? ($sp['guest_squad_number'] ?? null) : ($sp['squad_number'] ?? null); ?>
+                        <?php if ($number !== null): ?>
+                            <span><?= (int) $number ?></span>
                         <?php endif; ?>
                     </div>
                     <div class="live-player-name"><?= e($name) ?></div>
@@ -490,7 +488,7 @@ ob_start();
             <?php foreach ($bench as $bp): ?>
                 <?php
                 $name    = livePlayerName($bp);
-                $pid     = (int) $bp['player_id'];
+                $pid     = (int) $bp['id'];
                 $mpId    = (int) $bp['id'];
                 $pTime   = isset($playingTimes[$mpId]) ? (int) floor($playingTimes[$mpId] / 60) : 0;
                 $goals   = $playerGoals[$pid]   ?? 0;
@@ -499,8 +497,9 @@ ob_start();
                 ?>
                 <div class="live-player-row live-player-row--bench">
                     <div class="live-player-number">
-                        <?php if ($bp['squad_number'] !== null): ?>
-                            <span><?= (int) $bp['squad_number'] ?></span>
+                        <?php $number = (bool) $bp['is_guest'] ? ($bp['guest_squad_number'] ?? null) : ($bp['squad_number'] ?? null); ?>
+                        <?php if ($number !== null): ?>
+                            <span><?= (int) $number ?></span>
                         <?php endif; ?>
                     </div>
                     <div class="live-player-name">
@@ -640,8 +639,8 @@ ob_start();
         <form id="sub-form" method="POST" action="<?= e($backUrl) ?>">
             <?= csrfField() ?>
             <input type="hidden" name="_action" value="make_sub">
-            <input type="hidden" name="player_off_id" id="sub-off-id">
-            <input type="hidden" name="player_on_id"  id="sub-on-id">
+            <input type="hidden" name="player_off_match_player_id" id="sub-off-id">
+            <input type="hidden" name="player_on_match_player_id"  id="sub-on-id">
         </form>
     </div>
 </div>
@@ -674,8 +673,8 @@ ob_start();
 <form id="goal-form" method="POST" action="<?= e($backUrl) ?>">
     <?= csrfField() ?>
     <input type="hidden" name="_action"       id="gf-action"    value="register_goal">
-    <input type="hidden" name="player_id"     id="gf-player"    value="">
-    <input type="hidden" name="assist_player_id" id="gf-assist" value="">
+    <input type="hidden" name="match_player_id"     id="gf-player"    value="">
+    <input type="hidden" name="assist_match_player_id" id="gf-assist" value="">
     <input type="hidden" name="scored_via"    id="gf-via"       value="open_play">
     <input type="hidden" name="penalty_scored" id="gf-penalty"  value="">
     <input type="hidden" name="zone"          id="gf-zone"      value="">
@@ -686,7 +685,7 @@ ob_start();
     <?= csrfField() ?>
     <input type="hidden" name="_action"   value="register_card">
     <input type="hidden" name="card_type" id="cf-type"   value="yellow_card">
-    <input type="hidden" name="player_id" id="cf-player" value="">
+    <input type="hidden" name="match_player_id" id="cf-player" value="">
 </form>
 
 <!-- Note form -->
@@ -700,9 +699,8 @@ ob_start();
 // ── Data ──────────────────────────────────────────────────────────────────────
 var starters = <?= json_encode(array_map(fn($p) => [
     'mpId'          => (int) $p['id'],
-    'playerId'      => (int) $p['player_id'],
     'name'          => livePlayerName($p),
-    'number'        => $p['squad_number'],
+    'number'        => (bool) $p['is_guest'] ? ($p['guest_squad_number'] ?? null) : $p['squad_number'],
     'positionLabel' => $p['position_label'],
     'posX'          => (float) ($p['pos_x'] ?? 50),
     'posY'          => (float) ($p['pos_y'] ?? 50),
@@ -711,17 +709,15 @@ var starters = <?= json_encode(array_map(fn($p) => [
 
 var bench = <?= json_encode(array_map(fn($p) => [
     'mpId'     => (int) $p['id'],
-    'playerId' => (int) $p['player_id'],
     'name'     => livePlayerName($p),
-    'number'   => $p['squad_number'],
+    'number'   => (bool) $p['is_guest'] ? ($p['guest_squad_number'] ?? null) : $p['squad_number'],
     'isGuest'  => (bool) $p['is_guest'],
 ], $bench)) ?>;
 
 var allPlayers = <?= json_encode(array_map(fn($p) => [
     'mpId'     => (int) $p['id'],
-    'playerId' => (int) $p['player_id'],
     'name'     => livePlayerName($p),
-    'number'   => $p['squad_number'],
+    'number'   => (bool) $p['is_guest'] ? ($p['guest_squad_number'] ?? null) : $p['squad_number'],
     'isStarter'=> (bool) $p['in_starting_eleven'],
     'isGuest'  => (bool) $p['is_guest'],
 ], $players)) ?>;
@@ -800,16 +796,16 @@ function openPlayerSheet(data) {
 // ── Substitution sheet ────────────────────────────────────────────────────────
 function openSubSheet() {
     document.getElementById('player-sheet').style.display = 'none';
-    document.getElementById('sub-off-id').value = currentPlayer.playerId;
+    document.getElementById('sub-off-id').value = currentPlayer.mpId;
 
-    var available = bench.filter(function(b) { return !b.isGuest; });
+    var available = bench.filter(function(b) { return b.mpId !== currentPlayer.mpId; });
     var html = '';
     if (available.length === 0) {
         html = '<p class="text-muted text-sm" style="padding:1rem;">' + labels.noSubs + '</p>';
     } else {
         available.forEach(function(b) {
             var label = (b.number ? '#' + b.number + ' ' : '') + b.name;
-            html += '<div class="player-modal-item" onclick="confirmSub(' + b.playerId + ',' + JSON.stringify(b.name) + ')">'
+            html += '<div class="player-modal-item" onclick="confirmSub(' + b.mpId + ',' + JSON.stringify(b.name) + ')">'
                   + label + '</div>';
         });
     }
@@ -890,8 +886,7 @@ function startGoalFlow(isOwnGoal) {
 function showScorerPicker() {
     var html = '<div class="player-modal-item" onclick="setScorer(0)">' + labels.unknown + '</div>';
     starters.forEach(function(p) {
-        if (p.isGuest) { return; }
-        html += '<div class="player-modal-item" onclick="setScorer(' + p.playerId + ')">' +
+        html += '<div class="player-modal-item" onclick="setScorer(' + p.mpId + ')">' +
             (p.number ? '#' + p.number + ' ' : '') + p.name + '</div>';
     });
     document.getElementById('event-sheet-content').innerHTML = html;
@@ -905,8 +900,8 @@ function setScorer(pid) {
 function showAssistPicker() {
     var html = '<div class="player-modal-item" onclick="setAssist(0)">— <?= e(t('event.assist_optional')) ?></div>';
     starters.forEach(function(p) {
-        if (p.isGuest || p.playerId === goalState.scorerId) { return; }
-        html += '<div class="player-modal-item" onclick="setAssist(' + p.playerId + ')">' +
+        if (p.mpId === goalState.scorerId) { return; }
+        html += '<div class="player-modal-item" onclick="setAssist(' + p.mpId + ')">' +
             (p.number ? '#' + p.number + ' ' : '') + p.name + '</div>';
     });
     document.getElementById('event-sheet-content').innerHTML = html;
@@ -973,7 +968,7 @@ function showZonePicker(callback) {
 function showGoalConfirm() {
     var scorerName = labels.unknown;
     if (goalState.scorerId) {
-        var sp = starters.find(function(p) { return p.playerId === goalState.scorerId; });
+        var sp = starters.find(function(p) { return p.mpId === goalState.scorerId; });
         if (sp) { scorerName = sp.name; }
     }
     var summary = currentMinute + <?= json_encode(t('live.minute')) ?>;
@@ -982,7 +977,7 @@ function showGoalConfirm() {
     } else {
         summary += ' — ' + labels.goal + ': ' + scorerName;
         if (goalState.assistId) {
-            var ap = starters.find(function(p) { return p.playerId === goalState.assistId; });
+            var ap = starters.find(function(p) { return p.mpId === goalState.assistId; });
             if (ap) { summary += ' (' + ap.name + ')'; }
         }
         if (goalState.via !== 'open_play') {
@@ -1022,8 +1017,7 @@ function setCardType(type) {
     cardState.type = type;
     var html = '';
     allPlayers.forEach(function(p) {
-        if (p.isGuest) { return; }
-        html += '<div class="player-modal-item" onclick="submitCard(' + p.playerId + ')">'
+        html += '<div class="player-modal-item" onclick="submitCard(' + p.mpId + ')">'
               + (p.number ? '#' + p.number + ' ' : '') + p.name + '</div>';
     });
     document.getElementById('event-sheet-content').innerHTML = html;

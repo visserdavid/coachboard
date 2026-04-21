@@ -286,7 +286,10 @@ class MatchRepository
     public function stopHalf(int $halfId): bool
     {
         $stmt = $this->pdo->prepare(
-            'UPDATE match_half SET stopped_at = NOW() WHERE id = ?'
+            'UPDATE match_half
+             SET elapsed_seconds = COALESCE(elapsed_seconds, 0) + TIMESTAMPDIFF(SECOND, started_at, NOW()),
+                 stopped_at = NOW()
+             WHERE id = ? AND started_at IS NOT NULL AND stopped_at IS NULL'
         );
         return $stmt->execute([$halfId]);
     }
@@ -307,12 +310,15 @@ class MatchRepository
     {
         $stmt = $this->pdo->prepare(
             'SELECT me.*,
-                    p.first_name  AS player_name,
-                    p.squad_number AS player_number,
-                    ap.first_name AS assist_name
+                    COALESCE(mp.guest_name, p.first_name) AS player_name,
+                    COALESCE(mp.guest_squad_number, p.squad_number) AS player_number,
+                    COALESCE(amp.guest_name, ap.first_name) AS assist_name,
+                    COALESCE(amp.guest_squad_number, ap.squad_number) AS assist_number
              FROM match_event me
-             LEFT JOIN player p  ON p.id = me.player_id
-             LEFT JOIN player ap ON ap.id = me.assist_player_id
+             LEFT JOIN match_player mp ON mp.id = me.match_player_id
+             LEFT JOIN player p  ON p.id = COALESCE(me.player_id, mp.player_id)
+             LEFT JOIN match_player amp ON amp.id = me.assist_match_player_id
+             LEFT JOIN player ap ON ap.id = COALESCE(me.assist_player_id, amp.player_id)
              WHERE me.match_id = ?
              ORDER BY me.half ASC, me.minute ASC, me.id ASC'
         );
@@ -324,9 +330,9 @@ class MatchRepository
     {
         $stmt = $this->pdo->prepare(
             'INSERT INTO match_event
-             (match_id, half, minute, event_type, player_id, assist_player_id,
-              scored_via, penalty_scored, zone, note_text)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+             (match_id, half, minute, event_type, player_id, match_player_id,
+              assist_player_id, assist_match_player_id, scored_via, penalty_scored, zone, note_text)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
         );
         $stmt->execute([
             $data['match_id'],
@@ -334,7 +340,9 @@ class MatchRepository
             $data['minute'],
             $data['event_type'],
             $data['player_id']        ?? null,
+            $data['match_player_id']  ?? null,
             $data['assist_player_id'] ?? null,
+            $data['assist_match_player_id'] ?? null,
             $data['scored_via']       ?? null,
             $data['penalty_scored']   ?? null,
             $data['zone']             ?? null,
@@ -365,11 +373,15 @@ class MatchRepository
     {
         $stmt = $this->pdo->prepare(
             'SELECT s.*,
-                    po.first_name AS player_off_name, po.squad_number AS player_off_number,
-                    pi.first_name AS player_on_name,  pi.squad_number AS player_on_number
+                    COALESCE(mpo.guest_name, po.first_name) AS player_off_name,
+                    COALESCE(mpo.guest_squad_number, po.squad_number) AS player_off_number,
+                    COALESCE(mpi.guest_name, pi.first_name) AS player_on_name,
+                    COALESCE(mpi.guest_squad_number, pi.squad_number) AS player_on_number
              FROM substitution s
-             JOIN player po ON po.id = s.player_off_id
-             JOIN player pi ON pi.id = s.player_on_id
+             LEFT JOIN match_player mpo ON mpo.id = s.player_off_match_player_id
+             LEFT JOIN player po ON po.id = COALESCE(s.player_off_id, mpo.player_id)
+             LEFT JOIN match_player mpi ON mpi.id = s.player_on_match_player_id
+             LEFT JOIN player pi ON pi.id = COALESCE(s.player_on_id, mpi.player_id)
              WHERE s.match_id = ?
              ORDER BY s.half ASC, s.minute ASC, s.id ASC'
         );
@@ -380,15 +392,18 @@ class MatchRepository
     public function createSubstitution(array $data): int
     {
         $stmt = $this->pdo->prepare(
-            'INSERT INTO substitution (match_id, half, minute, player_off_id, player_on_id)
-             VALUES (?, ?, ?, ?, ?)'
+            'INSERT INTO substitution
+             (match_id, half, minute, player_off_id, player_off_match_player_id, player_on_id, player_on_match_player_id)
+             VALUES (?, ?, ?, ?, ?, ?, ?)'
         );
         $stmt->execute([
             $data['match_id'],
             $data['half'],
             $data['minute'],
-            $data['player_off_id'],
-            $data['player_on_id'],
+            $data['player_off_id'] ?? null,
+            $data['player_off_match_player_id'],
+            $data['player_on_id'] ?? null,
+            $data['player_on_match_player_id'],
         ]);
         return (int) $this->pdo->lastInsertId();
     }

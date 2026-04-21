@@ -83,9 +83,8 @@ $positions  = $formationId ? $formationRepo->getPositionsByFormation($formationI
 
 // Current match players
 $matchPlayers = $matchRepo->getMatchPlayers($id);
-$starters     = array_filter($matchPlayers, fn($p) => (bool) $p['in_starting_eleven'] && !(bool) $p['is_guest']);
-$benchPlayers = array_filter($matchPlayers, fn($p) => !(bool) $p['in_starting_eleven'] && !(bool) $p['is_guest']);
-$guestPlayers = array_filter($matchPlayers, fn($p) => (bool) $p['is_guest']);
+$starters     = array_filter($matchPlayers, fn($p) => (bool) $p['in_starting_eleven']);
+$benchPlayers = array_filter($matchPlayers, fn($p) => !(bool) $p['in_starting_eleven']);
 
 // Index starters by position_label for easy lookup
 $startersByLabel = [];
@@ -122,11 +121,6 @@ $templates = $matchRepo->getRecentMatchesForTemplate($teamId, 5);
 $templates = array_filter($templates, fn($t) => (int) $t['id'] !== $id);
 
 // Placed player IDs (starters)
-$placedPlayerIds = array_map(fn($s) => (int) $s['player_id'], $starters);
-
-// Players available for bench / selector (present, not a guest)
-$rosterPlayerIds = array_map(fn($mp) => (int) $mp['player_id'], array_filter($matchPlayers, fn($p) => !(bool) $p['is_guest']));
-
 $starterCount = count($starters);
 
 $dateLabel     = date('j M', strtotime($match['date']));
@@ -222,7 +216,6 @@ ob_start();
                      style="left:<?= $x ?>%; top:<?= $y ?>%;"
                      onclick="openPositionModal(<?= htmlspecialchars(json_encode([
                          'label'     => $label,
-                         'playerId'  => $assigned ? (int) $assigned['player_id'] : null,
                          'mpId'      => $assigned ? (int) $assigned['id'] : null,
                          'posX'      => $x,
                          'posY'      => $y,
@@ -245,25 +238,30 @@ ob_start();
 <div class="card" style="margin-bottom:0.75rem;">
     <strong style="display:block; margin-bottom:0.5rem;">
         <?= e(t('match.lineup.bench')) ?>
-        <span class="text-muted text-sm">(<?= count($benchPlayers) + count($guestPlayers) ?>)</span>
+        <span class="text-muted text-sm">(<?= count($benchPlayers) ?>)</span>
     </strong>
 
     <?php foreach ($benchPlayers as $bp): ?>
         <?php
-        $pid  = (int) $bp['player_id'];
+        $pid  = (int) ($bp['player_id'] ?? 0);
         $dots = $attendanceDots[$pid] ?? [];
         $injNote = $injuredMap[$pid] ?? null;
+        $name = (bool) $bp['is_guest'] ? ($bp['guest_name'] ?? '') : ($bp['first_name'] ?? '');
+        $number = (bool) $bp['is_guest'] ? ($bp['guest_squad_number'] ?? null) : ($bp['squad_number'] ?? null);
         ?>
         <div class="bench-player"
-             onclick="openBenchModal(<?= $pid ?>, <?= htmlspecialchars(json_encode($bp['first_name']), ENT_QUOTES) ?>)">
-            <div class="player-circle player-circle--sm">
-                <?= e(mb_strtoupper(mb_substr($bp['first_name'], 0, 2))) ?>
+             onclick="openBenchModal(<?= (int) $bp['id'] ?>, <?= htmlspecialchars(json_encode($name), ENT_QUOTES) ?>)">
+            <div class="player-circle player-circle--sm"<?= (bool) $bp['is_guest'] ? ' style="background:var(--color-neutral);"' : '' ?>>
+                <?= e(mb_strtoupper(mb_substr($name, 0, 2))) ?>
             </div>
             <div class="bench-player-info">
                 <div class="bench-player-name">
-                    <?= e($bp['first_name']) ?>
-                    <?php if ($bp['squad_number'] !== null): ?>
-                        <span class="text-muted">#<?= (int) $bp['squad_number'] ?></span>
+                    <?= e($name) ?>
+                    <?php if ($number !== null): ?>
+                        <span class="text-muted">#<?= (int) $number ?></span>
+                    <?php endif; ?>
+                    <?php if ((bool) $bp['is_guest']): ?>
+                        <span class="badge badge--accent" style="font-size:0.65rem;"><?= e(t('match.guest')) ?></span>
                     <?php endif; ?>
                 </div>
                 <div class="bench-player-meta" style="display:flex; gap:0.4rem; align-items:center;">
@@ -285,21 +283,7 @@ ob_start();
         </div>
     <?php endforeach; ?>
 
-    <?php foreach ($guestPlayers as $gp): ?>
-        <div class="bench-player">
-            <div class="player-circle player-circle--sm" style="background:var(--color-neutral);">
-                <?= e(mb_strtoupper(mb_substr($gp['guest_name'] ?? 'G', 0, 2))) ?>
-            </div>
-            <div class="bench-player-info">
-                <div class="bench-player-name">
-                    <?= e($gp['guest_name'] ?? '') ?>
-                    <span class="badge badge--accent" style="font-size:0.65rem;"><?= e(t('match.guest')) ?></span>
-                </div>
-            </div>
-        </div>
-    <?php endforeach; ?>
-
-    <?php if (empty($benchPlayers) && empty($guestPlayers)): ?>
+    <?php if (empty($benchPlayers)): ?>
         <p class="text-muted text-sm"><?= e(t('player.no_players')) ?></p>
     <?php endif; ?>
 </div>
@@ -356,19 +340,22 @@ ob_start();
 var currentPositionData = null;
 
 var rosterPlayers = <?= json_encode(array_values(array_map(function($mp) use ($attendanceDots, $injuredMap) {
-    $pid = (int) $mp['player_id'];
+    $pid = (int) ($mp['player_id'] ?? 0);
+    $name = (bool) $mp['is_guest'] ? ($mp['guest_name'] ?? '') : ($mp['first_name'] ?? '');
     return [
-        'id'           => $pid,
-        'name'         => $mp['first_name'],
-        'number'       => $mp['squad_number'],
+        'matchPlayerId'=> (int) $mp['id'],
+        'playerId'     => $pid > 0 ? $pid : null,
+        'name'         => $name,
+        'number'       => (bool) $mp['is_guest'] ? ($mp['guest_squad_number'] ?? null) : ($mp['squad_number'] ?? null),
         'inStarting'   => (bool) $mp['in_starting_eleven'],
         'positionLabel'=> $mp['position_label'],
         'posX'         => $mp['pos_x'],
         'posY'         => $mp['pos_y'],
         'attDots'      => $attendanceDots[$pid] ?? [],
         'injNote'      => $injuredMap[$pid] ?? null,
+        'isGuest'      => (bool) $mp['is_guest'],
     ];
-}, array_values(array_filter($matchPlayers, fn($p) => !(bool) $p['is_guest']))))) ?>;
+}, array_values($matchPlayers)))) ?>;
 
 var formationPositions = <?= json_encode(array_values(array_map(fn($p) => [
     'label' => $p['position_label'],
@@ -376,8 +363,8 @@ var formationPositions = <?= json_encode(array_values(array_map(fn($p) => [
     'posY'  => (float) $p['pos_y'],
 ], $positions))) ?>;
 
-function getPlayerById(id) {
-    return rosterPlayers.find(function(p) { return p.id === id; });
+function getPlayerByMatchPlayerId(id) {
+    return rosterPlayers.find(function(p) { return p.matchPlayerId === id; });
 }
 
 function getAssignedToPosition(label) {
@@ -394,14 +381,14 @@ function openPositionModal(data) {
     var html = '';
 
     // If position is filled — show clear option
-    if (data.playerId) {
+    if (data.mpId) {
         html += '<div class="player-modal-item" onclick="clearPosition(' + JSON.stringify(data.label) + ')" style="color:var(--color-danger);">';
         html += '<?= e(t('match.lineup.clear')) ?>';
         html += '</div>';
     }
 
     // Show available bench players (not assigned to a starting position)
-    var available = rosterPlayers.filter(function(p) { return !p.inStarting && p.id !== data.playerId; });
+    var available = rosterPlayers.filter(function(p) { return !p.inStarting && p.matchPlayerId !== data.mpId; });
     available.forEach(function(p) {
         var dots = p.attDots.slice().reverse();
         var dotsHtml = '';
@@ -410,7 +397,7 @@ function openPositionModal(data) {
             var cls = s ? 'att-dot--' + s : 'att-dot--none';
             dotsHtml += '<div class="att-dot ' + cls + '"></div>';
         }
-        html += '<div class="player-modal-item" onclick="assignPlayer(' + p.id + ', ' + JSON.stringify(data.label) + ')">';
+        html += '<div class="player-modal-item" onclick="assignPlayer(' + p.matchPlayerId + ', ' + JSON.stringify(data.label) + ')">';
         html += '<div class="player-circle player-circle--sm">' + p.name.substr(0,2).toUpperCase() + '</div>';
         html += '<div class="bench-player-info">';
         html += '<div class="bench-player-name">' + escHtml(p.name);
@@ -421,7 +408,7 @@ function openPositionModal(data) {
         html += '</div></div></div>';
     });
 
-    if (!available.length && !data.playerId) {
+    if (!available.length && !data.mpId) {
         html += '<p class="text-muted text-sm" style="padding:0.5rem 0;"><?= e(t('player.no_players')) ?></p>';
     }
 
@@ -429,7 +416,7 @@ function openPositionModal(data) {
     modal.style.display = 'flex';
 }
 
-function openBenchModal(playerId, name) {
+function openBenchModal(matchPlayerId, name) {
     var modal = document.getElementById('pos-modal');
     var title = document.getElementById('pos-modal-title');
     var content = document.getElementById('pos-modal-content');
@@ -440,7 +427,7 @@ function openBenchModal(playerId, name) {
     // Show unoccupied formation positions
     formationPositions.forEach(function(fp) {
         if (!getAssignedToPosition(fp.label)) {
-            html += '<div class="player-modal-item" onclick="assignPlayer(' + playerId + ', ' + JSON.stringify(fp.label) + ')">';
+            html += '<div class="player-modal-item" onclick="assignPlayer(' + matchPlayerId + ', ' + JSON.stringify(fp.label) + ')">';
             html += '<span>' + escHtml(fp.label) + '</span>';
             html += '</div>';
         }
@@ -454,7 +441,7 @@ function openBenchModal(playerId, name) {
     modal.style.display = 'flex';
 }
 
-function assignPlayer(playerId, positionLabel) {
+function assignPlayer(matchPlayerId, positionLabel) {
     // Find the position's x/y
     var fp = formationPositions.find(function(p) { return p.label === positionLabel; });
 
@@ -468,7 +455,7 @@ function assignPlayer(playerId, positionLabel) {
     }
 
     // If this player was already in another position, vacate it
-    var player = getPlayerById(playerId);
+    var player = getPlayerByMatchPlayerId(matchPlayerId);
     if (player) {
         player.inStarting = true;
         player.positionLabel = positionLabel;
@@ -503,7 +490,8 @@ function submitLineup() {
             input.value = v !== null && v !== undefined ? v : '';
             container.appendChild(input);
         };
-        f('player_id', p.id);
+        f('match_player_id', p.matchPlayerId);
+        f('player_id', p.playerId);
         f('in_starting_eleven', p.inStarting ? 1 : 0);
         f('position_label', p.positionLabel);
         f('pos_x', p.posX);
