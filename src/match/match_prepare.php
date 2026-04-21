@@ -195,6 +195,7 @@ ob_start();
                          style="display:<?= $status === 'absent' ? 'block' : 'none' ?>;">
                         <select name="att[<?= $pid ?>][absence_reason]" class="form-select"
                                 style="margin-top:0.25rem;">
+                            <option value=""><?= e(t('attendance.reason_placeholder')) ?></option>
                             <?php foreach (['sick', 'holiday', 'school', 'other'] as $r): ?>
                                 <option value="<?= $r ?>"
                                     <?= ($att['absence_reason'] ?? '') === $r ? 'selected' : '' ?>>
@@ -214,31 +215,6 @@ ob_start();
                     </div>
                 </div>
             <?php endforeach; ?>
-
-            <?php foreach ($guests as $guest): ?>
-                <div class="attendance-row">
-                    <div class="flex-between">
-                        <span>
-                            <?= e($guest['guest_name'] ?? '') ?>
-                            <?php if ($guest['guest_squad_number'] !== null): ?>
-                                <span class="text-muted text-sm">#<?= (int) $guest['guest_squad_number'] ?></span>
-                            <?php endif; ?>
-                            <span class="badge badge--accent" style="margin-left:0.3rem;"><?= e(t('match.guest')) ?></span>
-                        </span>
-                        <form method="POST"
-                              action="<?= e(APP_URL) ?>/index.php?page=match&action=prepare&id=<?= $id ?>"
-                              style="display:inline;">
-                            <?= csrfField() ?>
-                            <input type="hidden" name="_action" value="remove_guest">
-                            <input type="hidden" name="match_player_id" value="<?= (int) $guest['id'] ?>">
-                            <button type="submit" class="btn btn--danger btn--sm">
-                                <?= e(t('match.guest.remove')) ?>
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            <?php endforeach; ?>
-
         <?php endif; ?>
     </div>
 
